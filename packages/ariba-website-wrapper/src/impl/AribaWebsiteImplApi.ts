@@ -31,7 +31,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
             supplierOrderId,
         ).then((order) =>
-            purchaseOrderPage.close().then(() => order)
+            purchaseOrderPage.close().then(() => order),
         );
     }
 
