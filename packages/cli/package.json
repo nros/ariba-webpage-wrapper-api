@@ -1,0 +1,29 @@
+{
+  "name": "@rinaca/_template",
+  "description": "template package configuration'.",
+  "version": "0.1.0",
+  "keywords": [],
+  "license": "MIT",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run lint && npm run build:lib",
+    "build:lib": "node ../../build-tools/tsc.js",
+    "lint": "",
+    "lint:fix": "",
+    "start:dev": "node ../../node_modules/.bin/ts-node --project tsconfig.node.json src/index.ts",
+    "test": "",
+    "test:unit": ""
+  },
+  "dependencies": {
+    "ariba-website-wrapper": "../ariba-website-wrapper",
+    "config": "^3.3.6"
+  },
+  "devDependencies": {
+    "@types/config": "^0.0.40"
+  }
+}

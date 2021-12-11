@@ -1,0 +1,37 @@
+{
+  "name": "@urbantool/ariba-website-wrapper",
+  "description": "Wrapps the WebSite UI with puppeteer to perform ome actions programatically.",
+  "version": "0.1.0",
+  "keywords": [],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run lint && npm run build:lib",
+    "build:lib": "node ../../build-tools/tsc.js",
+    "lint": "node ../../node_modules/.bin/eslint src --ext .ts",
+    "lint:fix": "node ../../node_modules/.bin/eslint src --ext .ts --fix",
+    "start:dev": "node ../../node_modules/.bin/ts-node --project tsconfig.node.json src/index.ts",
+    "test": "",
+    "test:unit": ""
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.9",
+    "@types/puppeteer": "^5.4.4",
+    "@types/winston": "^2.4.4"
+  },
+  "dependencies": {
+    "puppeteer": "^12.0.0",
+    "puppeteer-extra-plugin-adblocker": "^2.12.0",
+    "puppeteer-extra-plugin-block-resources": "^2.3.0",
+    "puppeteer-extra-plugin-stealth": "^2.9.0",
+    "winston": "^3.3.3"
+  },
+  "engine": {
+    "node": ">=10.0.0"
+  }
+}

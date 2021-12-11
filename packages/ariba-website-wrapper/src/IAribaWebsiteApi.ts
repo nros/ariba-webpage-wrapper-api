@@ -1,0 +1,36 @@
+import type { IPurchaseOrder, TPurchaseOrderState } from "./IPurchaseOrder";
+
+/**
+ * A wrapper of the Ariba webshop website to perform some actions utilising an internal headless browser.
+ */
+export interface IAribaWebsiteApi {
+    /**
+     * Retrieves a list of purchase orders.
+     *
+     * <p>
+     * Retrieving the list can be very expensive. So, consider using a state to retrieve only the purchase orders that
+     * match this state.
+     * </p>
+     *
+     * @param filterForState (optional) only retrieve purchase orders of this state.
+     */
+    getPurchaseOrders(filterForState?: TPurchaseOrderState): Promise<IPurchaseOrder[]>;
+
+    /**
+     * Confirms the purchase order, settings its state to "Confirmed".
+     *
+     * @param purchaseOrderId The ID of the purchase order to confirm.
+     * @param estimatedDeliveryDate The ID of the purchase order to confirm.
+     * @param estimatedShippingDate (optional) the estimated shipping date
+     * @param supplierOrderId (optional) the order ID of the supplier (LOGSTA) for reference
+     * @return the data of the confirmed purchase order or {@code undefined} in case the purches order with the
+     *     provided ID does not exist or already is confirmed. The Ariba web page has only limited possibilities
+     *     to search for an order.
+     */
+    confirmPurchaseOrder(
+        purchaseOrderId: string,
+        estimatedDeliveryDate: string,
+        estimatedShippingDate?: string,
+        supplierOrderId?: string,
+    ): Promise<IPurchaseOrder | undefined>;
+}
