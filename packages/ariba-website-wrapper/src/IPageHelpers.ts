@@ -9,11 +9,4 @@ export interface IPageHelpers {
      * @return a function to be executed in the evaluation context of the browser page
      */
     deactivateAribaClickCheck(page: Page): Promise<Page>;
-
-    /**
-     * Executes a function serialised to a text
-     * @param page
-     * @param functionText
-     */
-    executeSerializedFunction(page: Page, functionText: string): Promise<Page>;
 }
