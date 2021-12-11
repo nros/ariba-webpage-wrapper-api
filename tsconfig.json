@@ -1,0 +1,12 @@
+{
+    "references": [
+        { "path": "./packages/_template/tsconfig.ref.json" }
+    ],
+    "exclude": [
+        "**/node_modules",
+        "node_modules",
+        "**/dist",
+        "**/lib"
+    ],
+    "files": []
+}
