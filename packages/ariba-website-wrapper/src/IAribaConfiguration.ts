@@ -1,6 +1,10 @@
 import type { Logger } from "winston";
 
-export interface IAribaConfiguration {
+export interface IAribaConfigurationPageUrls {
+    overviewPageUrl: string; // the URL of the start page
+}
+
+export interface IAribaConfiguration extends IAribaConfigurationPageUrls {
     /**
      * Read browser console messages and print them on the console.
      */
@@ -17,7 +21,4 @@ export interface IAribaConfiguration {
         width?: number; // defaults to 1980 if omitted
         height?: number; // defaults to 1024 if omitted
     },
-
-    overviewPageUrl: string; // the URL of the start page
-
 }
