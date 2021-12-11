@@ -45,4 +45,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         return [];
     }
 
+    public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
+        this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
+        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+        return await purchaseOrderPage.getOrderStatus(purchaseOrderId);
+    }
 }

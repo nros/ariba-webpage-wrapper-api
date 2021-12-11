@@ -33,4 +33,11 @@ export interface IAribaWebsiteApi {
         estimatedShippingDate?: string,
         supplierOrderId?: string,
     ): Promise<IPurchaseOrder | undefined>;
+
+    /**
+     * Retrieves the status of the purchase order.
+     *
+     * @param purchaseOrderId The ID of the purchase order.
+     */
+    getPurchaseOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState>;
 }

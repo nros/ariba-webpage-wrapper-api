@@ -13,6 +13,28 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         return "PurchaseOrderPageImpl";
     }
 
+    public async getOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
+        //
+        this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
+        await this.navigateToPurchaseOrder(purchaseOrderId);
+
+        const page = await this.currentPage;
+
+        this._logger.debug(`Read order status with jQuery`);
+        const status = await page.evaluate(() =>
+            window.jQuery(".poHeaderStatusStyle").text().replace(/[)(]/g, "").toLowerCase().trim(),
+        );
+
+        switch (status) {
+        case "new":
+            return TPurchaseOrderState.NEW;
+        case "confirmed":
+            return TPurchaseOrderState.CONFIRMED;
+        default:
+            throw new Error("Failed to read status of order. Status is unknown: " + status);
+        }
+    }
+
     public async confirmPurchaseOrder(
         purchaseOrderId: string,
         estimatedDeliveryDate: Date,
