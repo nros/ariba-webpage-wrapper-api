@@ -69,6 +69,31 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         }
     }
 
+    public async createInvoice(
+        purchaseOrderId: string,
+        logisticsOrderId: string,
+        invoiceNumber: string,
+    ): Promise<IPurchaseOrder | undefined> {
+        if (!invoiceNumber) {
+            throw new Error("Invalid invoice number!");
+        }
+        if (!purchaseOrderId) {
+            throw new Error("Invalid purchase order ID!");
+        }
+
+        this._logger.info(`Create invoice for purchase order with ID ${purchaseOrderId}.`);
+        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+        try {
+            return purchaseOrderPage.createInvoice(
+                purchaseOrderId,
+                logisticsOrderId,
+                invoiceNumber,
+            );
+        } finally {
+            await purchaseOrderPage.close();
+        }
+    }
+
     public async getPurchaseOrders(filterForState?: TPurchaseOrderState): Promise<IPurchaseOrder[]> {
         /*
         const page = await this.currentPage;

@@ -37,6 +37,238 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
     }
 
+    public async createShippingNotice(
+        purchaseOrderId: string,
+        packingSlipId: string,
+        carrierName: string,
+        trackingNumber: string,
+        trackingUrl: string,
+        estimatedDeliveryDate: Date,
+        shippingDate?: Date,
+    ): Promise<IPurchaseOrder | undefined> {
+        this._logger.info(`sending shipping notice for purchase order with ID ${purchaseOrderId}.`);
+
+        // first, check order status. In case of error, assume already confirmed
+        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.CONFIRMED);
+        if (state !== TPurchaseOrderState.CONFIRMED) {
+            throw Error("Purchase order must be confirmed first to create a shipping notice.");
+        }
+
+        const page = await this.currentPage;
+
+        this._logger.info("Wait for the create ship notice button.");
+        (await page.waitForSelector("button[title*='Create'][title*='Ship Notice']"));
+
+        // open a notice dialog
+        this._logger.debug(`Opening the shipping notice dialog for purchase order with ID ${purchaseOrderId}.`);
+        await Promise.all([
+            page.evaluate(() =>
+                window.ariba.Handlers.fakeClick(jQuery("button:contains('Create Ship Notice')").first()[0]),
+            ),
+            page.waitForNavigation(),
+        ]);
+
+        // Select "Other" carrier
+        this._logger.debug(`Selecting 'other' carrier!`);
+        await Promise.all([
+            page.evaluate(() =>
+                window.ariba.Handlers.fakeClick(
+                    jQuery("td:contains('Carrier Name:'):not(:has(td))")
+                        .parents("td").first().next().find("a:contains('Other')")[0],
+                ),
+            ),
+            page.waitForNavigation({ waitUntil: "networkidle0" }),
+        ]);
+
+        // fill carrier name
+        await page.evaluate((carrierName) => {
+            jQuery("td:contains('Carrier Name:'):not(:has(td))")
+                .parents("td")
+                .first()
+                .parents("tr")
+                .first()
+                .next()
+                .find("input")
+                .val(carrierName);
+        }, carrierName);
+
+        // fill tracking number
+        await page.evaluate((trackingNumber) => {
+            jQuery("td:contains('Tracking No.'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .find("input")
+                .first()
+                .val(trackingNumber);
+        }, trackingNumber);
+
+
+        // fill in packing slip ID
+        await page.evaluate((packingSlipId) => {
+            jQuery("td:contains('Packing Slip ID'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .find("input")
+                .first()
+                .val(packingSlipId);
+        }, packingSlipId);
+
+        // fill the delivery date
+        this._logger.debug(`Setting estimated delivery date: ${estimatedDeliveryDate}`);
+        await page.evaluate((dateString) => {
+            const dateTime = new Date("" + dateString);
+            const dateFormatter = new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "short", day: "numeric" });
+            const value = dateFormatter.format(dateTime);
+
+            jQuery("td:contains('Delivery Date'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .find("input")
+                .first()
+                .val(value);
+        }, "" + estimatedDeliveryDate);
+
+
+        if (shippingDate) {
+            this._logger.debug(`Setting shipping date: ${estimatedDeliveryDate}`);
+            await page.evaluate((dateString) => {
+                const dateTime = new Date("" + dateString);
+                const dateFormatter = new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "short", day: "numeric" });
+                const value = dateFormatter.format(dateTime);
+
+                jQuery("td:contains('Shipping Date'):not(:has(td))")
+                    .parents("td")
+                    .first()
+                    .next()
+                    .find("input")
+                    .first()
+                    .val(value);
+            }, "" + shippingDate);
+        }
+
+        this._logger.debug("Confirm order and got to next page of form");
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await Promise.all([
+            this.clickButtonWithText(page, "Next"),
+            page.waitForNavigation(),
+        ]);
+
+        this._logger.debug("End shipping notice order form");
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await Promise.all([
+            this.clickButtonWithText(page, "Submit"),
+            await page.waitForNavigation(),
+        ]);
+
+        return undefined;
+    }
+
+
+    public async createInvoice(
+        purchaseOrderId: string,
+        logisticsOrderId: string,
+        invoiceNumber: string,
+    ): Promise<IPurchaseOrder | undefined> {
+        this._logger.info(`Creating invoice for purchase order with ID ${purchaseOrderId}.`);
+
+        // first, check order status. In case of error, assume already confirmed
+        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
+        if (state !== TPurchaseOrderState.DELIVERY_INITIATED) {
+            throw Error("Purchase order must be delivered first to create an invoice.");
+        }
+
+        const page = await this.currentPage;
+
+        this._logger.info("Wait for the create invoice button.");
+        (await page.waitForSelector("button[title*='Create'][title*='invoice']"));
+
+        this._logger.info(`Activate the submenu of the create invoice button.`);
+        await page.evaluate(() => window.ariba.Menu.PML.click(
+            jQuery("button[title*='Create'][title*='order confirmation']")
+                // for some reason, more than a single button is available in the page. Only the last one
+                // is visible, but ":visible" does not filter the others.
+                .last()
+                .parents(".w-pulldown-button")
+                .first()[0],
+        ));
+
+        this._logger.info(`Activate "Standard Invoice" button.`);
+        await page.evaluate(() =>
+            window.ariba.Handlers.fakeClick(jQuery("a:contains('Standard Invoice')")[0]),
+        );
+        await page.waitForXPath("//a[contains(text(), 'Invoice Header')]", { visible: true });
+
+        // fill supplier reference
+        await page.evaluate((invoiceNumber) => {
+            jQuery("td:contains('Invoice #'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .find("input")
+                .first()
+                .val(invoiceNumber);
+        }, invoiceNumber);
+
+        // fill supplier reference
+        await page.evaluate((logisticsOrderId) => {
+            jQuery("td:contains('Supplier Reference:'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .find("input")
+                .val(logisticsOrderId);
+        }, logisticsOrderId);
+
+        // disable "skonto"/discount but set to penalty
+        /* At the moment, the default discount is the accepted version. This code is just kept for reference!
+        await page.evaluate((logisticsOrderId) =>
+            jQuery("td:contains('Discount or Penalty Term'):not(:has(td))")
+                .parents("td")
+                .first()
+                .next()
+                .next()
+                .next()
+                .find("input")
+                .val("-3"),
+        );
+        */
+
+        this._logger.debug("Select URBAN TOOL Deutschland as sender of invoice.");
+        await page.evaluate(() => {
+            const dropDown = jQuery(".w-dropdown-selected:contains('URBAN TOOL')")
+                .parents("div.w-dropdown[bh='DDM']").first()
+            ;
+
+            window.ariba?.AWWidgets.DropDown.openDropdown(dropDown);
+            setTimeout(() => window.ariba?.AWWidgets.DropDown.dropDownMenuAction(
+                dropDown.find("div.w-dropdown-item:contains('URBAN TOOL Deutschland')"),
+                null,
+            ), 20);
+        });
+
+        this._logger.debug("Confirm invoice and got to next page of form");
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await Promise.all([
+            this.clickButtonWithText(page, "Next"),
+            page.waitForNavigation(),
+        ]);
+
+        this._logger.debug("End invoice order form");
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await Promise.all([
+            this.clickButtonWithText(page, "Submit"),
+            await page.waitForNavigation(),
+        ]);
+        return {
+            id: purchaseOrderId,
+            state: TPurchaseOrderState.INVOICED,
+        };
+    }
+
+
     public async confirmPurchaseOrder(
         purchaseOrderId: string,
         estimatedDeliveryDate: Date,

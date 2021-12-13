@@ -20,7 +20,7 @@ export interface IPurchaseOrderPage extends IAribaPage {
      * Opens the page order status dialog and confirms the specified order.
      *
      * @param purchaseOrderId The ID of the purchase order to confirm.
-     * @param estimatedDeliveryDate The ID of the purchase order to confirm.
+     * @param estimatedDeliveryDate The estimated date of delivery
      * @param estimatedShippingDate (optional) the estimated shipping date
      * @param supplierOrderId (optional) the order ID of the supplier (LOGSTA) for reference
      */
@@ -30,6 +30,35 @@ export interface IPurchaseOrderPage extends IAribaPage {
         estimatedShippingDate?: Date,
         supplierOrderId?: string,
     ): Promise<IPurchaseOrder | undefined>;
+
+    /**
+     * Sends a shipping notice
+     *
+     * @param purchaseOrderId The ID of the purchase order to confirm.
+     * @param packingSlipId The ID on the label of the package
+     * @param carrierName The name of the carrier
+     * @param trackingNumber
+     * @param trackingUrl The tracking URL
+     * @param estimatedDeliveryDate The estimated date of delivery
+     * @param shippingDate (optional)
+     */
+    createShippingNotice(
+        purchaseOrderId: string,
+        packingSlipId: string,
+        carrierName: string,
+        trackingNumber: string,
+        trackingUrl: string,
+        estimatedDeliveryDate: Date,
+        shippingDate?: Date,
+    ): Promise<IPurchaseOrder | undefined>;
+
+
+    createInvoice(
+        purchaseOrderId: string,
+        logisticsOrderId: string,
+        invoiceNumber: string,
+    ): Promise<IPurchaseOrder | undefined>;
+
 
     /**
      * Navigates to the status page of the purchase order.
