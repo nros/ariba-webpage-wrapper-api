@@ -39,5 +39,5 @@ export interface IAribaWebsiteApi {
      *
      * @param purchaseOrderId The ID of the purchase order.
      */
-    getPurchaseOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState>;
+    getPurchaseOrderStatus(purchaseOrderId: string): Promise<{id: string, state: string}>;
 }

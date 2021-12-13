@@ -4,7 +4,7 @@ import type { IAribaFactory } from "../IAribaFactory";
 import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
 import type { IPurchaseOrder } from "../IPurchaseOrder";
 
-import { TPurchaseOrderState } from "../IPurchaseOrder";
+import { TPurchaseOrderState, status2String } from "../IPurchaseOrder";
 
 
 export class AribaWebsiteImplApi implements IAribaWebsiteApi {
@@ -79,11 +79,15 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         return [];
     }
 
-    public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
+    public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<{id: string, state: string}> {
         this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
         const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
         try {
-            return await purchaseOrderPage.getOrderStatus(purchaseOrderId);
+            return {
+                id: purchaseOrderId,
+                state: await purchaseOrderPage.getOrderStatus(purchaseOrderId)
+                    .then(status2String),
+            };
         } finally {
             await purchaseOrderPage.close();
         }

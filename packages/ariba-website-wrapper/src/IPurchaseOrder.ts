@@ -26,6 +26,35 @@ export enum TPurchaseOrderState {
     ACCEPTED = 20,
 }
 
+export function status2String(status: TPurchaseOrderState): string {
+    const translate: { [key: string]: string } = {
+        "i-2": "All",
+        "i0": "NEW",
+        "i1": "CHANGED",
+        "i2": "CONFIRMED",
+        "i3": "FAILED",
+        "i4": "DELIVERY_INITIATED",
+        "i5": "FULLY_CONFIRMED",
+        "i6": "RETURNED",
+        "i7": "SERVICE_DONE",
+        "i8": "INVOICED",
+        "i9": "PARTIALLY_CONFIRMED",
+        "i10": "PARTIAL_DELIVERY",
+        "i11": "PARTIAL_PROCESSED",
+        "i12": "SERVICE_PARTIALLY_DONE",
+        "i13": "INVOICED_PARTIALLY",
+        "i14": "REJECTED_PARTIALLY",
+        "i15": "BACK_ORDERED_PARTIALLY",
+        "i16": "PROCESSING",
+        "i17": "REJECTED",
+        "i18": "OUT_OF_DATE",
+        "i19": "REFUSED",
+        "i20": "ACCEPTED",
+    };
+
+    return translate["i" + status] || "UNKNOWN";
+}
+
 /**
  * Data about a purches order as retrieved from the Ariba website.
  */
