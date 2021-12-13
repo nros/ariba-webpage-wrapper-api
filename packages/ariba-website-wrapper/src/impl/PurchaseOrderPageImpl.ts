@@ -26,9 +26,12 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         switch (status) {
         case "new":
+        case "failed":
             return TPurchaseOrderState.NEW;
         case "confirmed":
             return TPurchaseOrderState.CONFIRMED;
+        case "shipped":
+            return TPurchaseOrderState.DELIVERY_INITIATED;
         default:
             throw new Error("Failed to read status of order. Status is unknown: " + status);
         }
