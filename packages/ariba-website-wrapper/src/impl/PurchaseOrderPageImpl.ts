@@ -1,8 +1,7 @@
 import type { Page } from "puppeteer";
 import type { IPurchaseOrder } from "../IPurchaseOrder";
-import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
-
 import { TPurchaseOrderState } from "../IPurchaseOrder";
+import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
 import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl";
 
 
@@ -136,7 +135,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.setPurchaseOrdersFilterOrderNumber(page, purchaseOrderId);
         await this.pressPurchaseOrdersFilterSearchButton(page);
         */
-        return undefined;
+        return {
+            id: purchaseOrderId,
+            state: TPurchaseOrderState.CONFIRMED,
+        };
     }
 
     public async navigateToPurchaseOrder(purchaseOrderId: string): Promise<IPurchaseOrderPage> {

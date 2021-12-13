@@ -39,11 +39,4 @@ export interface IPurchaseOrder {
      * The id of the purchase order on the website.
      */
     readonly state: TPurchaseOrderState;
-
-    /**
-     * Apply a new state to the purchase order.
-     *
-     * @param purchaseOrderId The ID of the purchase order to retrieve.
-     */
-    setNewState(newState: TPurchaseOrderState): Promise<IPurchaseOrder>;
 }
