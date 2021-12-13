@@ -3,6 +3,7 @@ import type { Logger } from "winston";
 
 import type { IAribaConfiguration } from "./IAribaConfiguration";
 import type { IAribaWebsiteApi } from "./IAribaWebsiteApi";
+import type { IInvoicePage } from "./IInvoicePage";
 import type { ILoginPage } from "./ILoginPage";
 import type { IPageFormHelper } from "./IPageFormHelper";
 import type { IPageHelpers } from "./IPageHelpers";
@@ -55,4 +56,5 @@ export interface IAribaFactory {
 
     createPurchaseOrderPage(): Promise<IPurchaseOrderPage>;
     createLoginPage(): Promise<ILoginPage>;
+    createInvoicePage(): Promise<IInvoicePage>;
 }

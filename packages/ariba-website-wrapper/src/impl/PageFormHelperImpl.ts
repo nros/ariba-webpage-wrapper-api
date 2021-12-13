@@ -132,6 +132,30 @@ export class PageFormHelperImpl implements PageFormHelperImpl {
         return page;
     }
 
+    public async selectDropdownValue(
+        page: Page,
+        dropdownGroupSelector: string,
+        dropdownItemSelector: string,
+    ): Promise<Page> {
+
+        // select maximum of 500 per list
+        this._logger.debug(`Wait for drop down group ${dropdownGroupSelector} become available.`);
+        await page.waitForSelector(dropdownGroupSelector);
+
+        this._logger.debug("Selecting dropdown item.");
+        await page.evaluate((dropdownGroupSelector, dropdownItemSelector) => {
+            const dropDownItem = jQuery(dropdownGroupSelector);
+            window.ariba.AWWidgets.DropDown.openDropdown(dropDownItem);
+
+            setTimeout(() => window.ariba.AWWidgets.DropDown.dropDownMenuAction(
+                dropDownItem.find(dropdownItemSelector),
+                null,
+            ), 20);
+        }, dropdownGroupSelector, dropdownItemSelector);
+
+        return page;
+    }
+
     private get pageHelper(): IPageHelpers {
         return this._factory.getPageHelper();
     }

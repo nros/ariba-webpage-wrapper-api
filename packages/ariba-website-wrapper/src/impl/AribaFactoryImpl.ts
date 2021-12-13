@@ -4,6 +4,7 @@ import type * as Transport from "winston-transport";
 import type { IAribaConfiguration } from "../IAribaConfiguration";
 import type { IAribaFactory } from "../IAribaFactory";
 import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
+import type { IInvoicePage } from "../IInvoicePage";
 import type { ILoginPage } from "../ILoginPage";
 import type { IPageFormHelper } from "../IPageFormHelper";
 import type { IPageHelpers } from "../IPageHelpers";
@@ -11,6 +12,7 @@ import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
 
 import puppeteer from "./puppeteer-with-plugins";
 import { AribaWebsiteImplApi } from "./AribaWebsiteImplApi";
+import { InvoicePageImpl } from "./InvoicePageImpl";
 import { LoginPageImpl } from "./LoginPageImpl";
 import { PageFormHelperImpl } from "./PageFormHelperImpl";
 import { PageHelpersImpl } from "./PageHelpersImpl";
@@ -212,6 +214,10 @@ export class AribaFactoryImpl implements IAribaFactory {
 
     public async createLoginPage(): Promise<ILoginPage> {
         return new LoginPageImpl(this);
+    }
+
+    public async createInvoicePage(): Promise<IInvoicePage> {
+        return new InvoicePageImpl(this);
     }
 
     private getViewportSize(config?: IAribaConfiguration): { width: number, height: number } {

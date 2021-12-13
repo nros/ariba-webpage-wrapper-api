@@ -117,4 +117,14 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             await purchaseOrderPage.close();
         }
     }
+
+    public async getLastInvoiceNumber(): Promise<string> {
+        this._logger.info(`Getting last invoice number.`);
+        const page = await this._factory.createInvoicePage();
+        try {
+            return page.getLatestInvoiceNumber();
+        } finally {
+            page.close();
+        }
+    }
 }
