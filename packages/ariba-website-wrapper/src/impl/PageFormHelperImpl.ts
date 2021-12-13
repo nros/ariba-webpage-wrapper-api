@@ -21,14 +21,11 @@ export class PageFormHelperImpl implements PageFormHelperImpl {
             await page.waitForSelector("td.SearchFooter .w-dropdown:first-child");
 
             this._logger.debug("Setting maxium number of search items to 500.");
-            await page.evaluate(() => {
-                const dropDownItem = jQuery("td.SearchFooter .w-dropdown");
-                window.ariba.AWWidgets.DropDown.openDropdown(dropDownItem);
-                setTimeout(() => window.ariba.AWWidgets.DropDown.dropDownMenuAction(
-                    dropDownItem.find(".w-dropdown-item").last(),
-                    null,
-                ), 20);
-            });
+            await this.selectDropdownValue(
+                page,
+                "td.SearchFooter .w-dropdown",
+                ".w-dropdown-item:last",
+            );
 
         } catch (err) {
             this._logger.error("Failed to set the size of the list: " + (err as Error).message);
