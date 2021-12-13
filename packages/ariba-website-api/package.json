@@ -1,0 +1,35 @@
+{
+  "name": "@urbantool/ariba-website-api",
+  "description": "Wrappes the Ariba website into a RESTful API (alpha draft).",
+  "version": "0.1.0",
+  "keywords": [],
+  "license": "MIT",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run lint && npm run build:lib",
+    "build:lib": "node ../../build-tools/tsc.js",
+    "lint": "",
+    "lint:fix": "",
+    "start:dev": "node ../../node_modules/.bin/ts-node --project tsconfig.node.json src/index.ts",
+    "test": "",
+    "test:unit": ""
+  },
+  "dependencies": {
+    "ariba-website-wrapper": "../ariba-website-wrapper",
+    "body-parser": "^1.19.1",
+    "config": "^3.3.6",
+    "express": "^4.17.1",
+    "express-basic-auth": "^1.2.0",
+    "nocache": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/config": "^0.0.40",
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.11.12"
+  }
+}

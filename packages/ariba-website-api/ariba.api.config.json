@@ -1,0 +1,12 @@
+{
+    "overviewPageUrl": "https://eu.mu.ariba.com/seller-portal-dashboard/home",
+    "server": {
+        "port": 43673
+    },
+    "screenResolution": {
+        "headless": false,
+        "width": 1980
+    },
+    "debugBrowserConsole": false,
+    "logLevel": "debug"
+}
