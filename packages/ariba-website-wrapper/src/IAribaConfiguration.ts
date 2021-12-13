@@ -18,6 +18,7 @@ export interface IAribaConfiguration extends IAribaConfigurationPageUrls {
     username: string;
     password: string;
     screenResolution?: {
+        headless: boolean,
         width?: number; // defaults to 1980 if omitted
         height?: number; // defaults to 1024 if omitted
     },

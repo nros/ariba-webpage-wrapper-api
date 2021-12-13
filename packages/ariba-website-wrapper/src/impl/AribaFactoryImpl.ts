@@ -75,7 +75,7 @@ export class AribaFactoryImpl implements IAribaFactory {
             this._browser = await puppeteer.launch({
                 defaultViewport: this.getViewportSize(this.config),
                 devtools: true,
-                headless: false,
+                headless: !!this.config.screenResolution?.headless,
                 args: ["--lang=en-US,en"],
                 // slowMo: 25, // for debugging purpose
             });
@@ -204,7 +204,8 @@ export class AribaFactoryImpl implements IAribaFactory {
     }
 
     private getViewportSize(config?: IAribaConfiguration): { width: number, height: number } {
-        const configScreenResolution = (config || this._config || {}).screenResolution || {};
+        const configScreenResolution =
+            (config || this._config || {}).screenResolution || {} as { width: number, height: number};
 
         return {
             ...configScreenResolution,
