@@ -42,7 +42,16 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
     ): Promise<IPurchaseOrder | undefined> {
         //
         this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
-        await this.navigateToPurchaseOrder(purchaseOrderId);
+
+        // first, check order status. In case of error, assume already confirmed
+        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.CONFIRMED);
+        if (state !== TPurchaseOrderState.NEW) {
+            return {
+                id: purchaseOrderId,
+                state,
+            };
+        }
+
 
         const page = await this.currentPage;
 
