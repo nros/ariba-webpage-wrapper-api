@@ -4,7 +4,7 @@
         "port": 43673
     },
     "screenResolution": {
-        "headless": false,
+        "headless": true,
         "width": 1980
     },
     "debugBrowserConsole": false,

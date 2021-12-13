@@ -79,7 +79,7 @@ export class AribaFactoryImpl implements IAribaFactory {
         if (!this._browser) {
             this._browser = await puppeteer.launch({
                 defaultViewport: this.getViewportSize(this.config),
-                devtools: true,
+                devtools: false,
                 headless: !!this.config.screenResolution?.headless,
                 args: ["--lang=en-US,en"],
                 // slowMo: 25, // for debugging purpose
