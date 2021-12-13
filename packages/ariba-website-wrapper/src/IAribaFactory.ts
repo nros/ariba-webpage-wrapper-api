@@ -4,6 +4,7 @@ import type { Logger } from "winston";
 import type { IAribaConfiguration } from "./IAribaConfiguration";
 import type { IAribaWebsiteApi } from "./IAribaWebsiteApi";
 import type { ILoginPage } from "./ILoginPage";
+import type { IPageFormHelper } from "./IPageFormHelper";
 import type { IPageHelpers } from "./IPageHelpers";
 import type { IPurchaseOrderPage } from "./IPurchaseOrderPage";
 
@@ -44,6 +45,8 @@ export interface IAribaFactory {
      * Get the singleton page helper class that provides additional helper functions.
      */
     getPageHelper(): IPageHelpers;
+
+    getFormHelper(): IPageFormHelper;
 
     /**
      * create a new logger for the provided class name

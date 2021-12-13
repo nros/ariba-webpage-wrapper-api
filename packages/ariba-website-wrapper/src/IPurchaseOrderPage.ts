@@ -1,6 +1,5 @@
 import type { Page } from "puppeteer";
 import type { IAribaPage } from "./IAribaPage";
-
 import type { IPurchaseOrder } from "./IPurchaseOrder";
 
 import { TPurchaseOrderState } from "./IPurchaseOrder";
@@ -47,15 +46,6 @@ export interface IPurchaseOrderPage extends IAribaPage {
     openPurchaseOrderSearchPage(page: Page): Promise<Page>;
 
     /**
-     * Prepares the purchase order search page filters by opening them and applying common filters.
-     *
-     * @param page the page to set the filters to.
-     * @param filterForState the state of the purchase order to search for.
-     * @private
-     */
-    setPurchaseOrdersFilterOpen(page: Page): Promise<Page>;
-
-    /**
      * Sets the purchase order filter of the Purchase Order (PO) state.
      *
      * @param page the page to set the filters to.
@@ -63,14 +53,6 @@ export interface IPurchaseOrderPage extends IAribaPage {
      * @private
      */
     setPurchaseOrdersFilterPoState(page: Page, filterForState: TPurchaseOrderState): Promise<Page>;
-
-    /**
-     * Sets the date range filter to the maximum days (32) or to "none".
-     *
-     * @param isUseNone (optional) if {@code true}, then the date range is set to "none" of the page supports that.
-     * @private
-     */
-    setPurchaseOrdersFilterDateRange(page: Page, isUseNone?: boolean): Promise<Page>;
 
     /**
      * Sets the order number in the purchase order page to the given value.

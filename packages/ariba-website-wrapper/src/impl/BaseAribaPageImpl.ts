@@ -3,6 +3,7 @@ import type { Logger } from "winston";
 import type { IAribaConfiguration } from "../IAribaConfiguration";
 import type { IAribaFactory } from "../IAribaFactory";
 import type { IAribaPage } from "../IAribaPage";
+import type { IPageFormHelper } from "../IPageFormHelper";
 import type { IPageHelpers } from "../IPageHelpers";
 
 /**
@@ -37,6 +38,10 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
     public get pageHelper(): IPageHelpers {
         return this._factory.getPageHelper();
+    }
+
+    public get pageFormHelper(): IPageFormHelper {
+        return this._factory.getFormHelper();
     }
 
     public async navigateToHome(): Promise<IAribaPage> {

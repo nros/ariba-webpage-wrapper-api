@@ -5,12 +5,14 @@ import type { IAribaConfiguration } from "../IAribaConfiguration";
 import type { IAribaFactory } from "../IAribaFactory";
 import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
 import type { ILoginPage } from "../ILoginPage";
+import type { IPageFormHelper } from "../IPageFormHelper";
 import type { IPageHelpers } from "../IPageHelpers";
 import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
 
 import puppeteer from "./puppeteer-with-plugins";
 import { AribaWebsiteImplApi } from "./AribaWebsiteImplApi";
 import { LoginPageImpl } from "./LoginPageImpl";
+import { PageFormHelperImpl } from "./PageFormHelperImpl";
 import { PageHelpersImpl } from "./PageHelpersImpl";
 import { PurchaseOrderPageImpl } from "./PurchaseOrderPageImpl";
 import { createLogger, format, transports, Logger } from "winston";
@@ -27,6 +29,7 @@ export class AribaFactoryImpl implements IAribaFactory {
     private _logger: Logger;
     private _website?: IAribaWebsiteApi;
     private _pageHelper?: IPageHelpers;
+    private _pageFormHelper?: IPageFormHelper;
 
     public constructor(configuration: IAribaConfiguration) {
         this._config = configuration;
@@ -189,6 +192,14 @@ export class AribaFactoryImpl implements IAribaFactory {
         }
 
         return this._pageHelper;
+    }
+
+    public getFormHelper(): IPageFormHelper {
+        if (!this._pageFormHelper) {
+            this._pageFormHelper = new PageFormHelperImpl(this);
+        }
+
+        return this._pageFormHelper;
     }
 
     public createLogger(loggerName: string): Logger {
