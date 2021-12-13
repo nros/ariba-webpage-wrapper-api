@@ -25,14 +25,16 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     ): Promise<IPurchaseOrder | undefined> {
         this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
         const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        return purchaseOrderPage.confirmPurchaseOrder(
-            purchaseOrderId,
-            new Date(estimatedDeliveryDate),
-            estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
-            supplierOrderId,
-        ).then((order) =>
-            purchaseOrderPage.close().then(() => order),
-        );
+        try {
+            return purchaseOrderPage.confirmPurchaseOrder(
+                purchaseOrderId,
+                new Date(estimatedDeliveryDate),
+                estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
+                supplierOrderId,
+            );
+        } finally {
+            await purchaseOrderPage.close();
+        }
     }
 
     public async getPurchaseOrders(filterForState?: TPurchaseOrderState): Promise<IPurchaseOrder[]> {
@@ -48,6 +50,10 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
         this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
         const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        return await purchaseOrderPage.getOrderStatus(purchaseOrderId);
+        try {
+            return await purchaseOrderPage.getOrderStatus(purchaseOrderId);
+        } finally {
+            await purchaseOrderPage.close();
+        }
     }
 }
