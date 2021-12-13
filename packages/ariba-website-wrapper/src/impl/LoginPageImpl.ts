@@ -73,9 +73,10 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
             await page.keyboard.type("" + this.config.password);
 
             this._logger.debug("performing submit and waiting for page navigation");
+            await this.pageHelper.deactivateAribaClickCheck(page);
             await Promise.all([
-                page.click("input[type='submit']"),
-                await page.waitForNavigation(),
+                page.evaluate(() => jQuery("input[type='submit']").trigger("click")),
+                page.waitForNavigation(),
             ]);
 
             try {
