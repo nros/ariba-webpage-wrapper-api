@@ -130,7 +130,7 @@ export class AribaFactoryImpl implements IAribaFactory {
                     if (!window.jQuery) {
                         // Load the script
                         const script = document.createElement("SCRIPT") as HTMLScriptElement;
-                        script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js";
+                        script.src = "https://service.ariba.com/an/3569122807/ariba/ui/aribaweb/jquery.js";
                         script.type = "text/javascript";
                         document.getElementsByTagName("head")[0].appendChild(script);
 
