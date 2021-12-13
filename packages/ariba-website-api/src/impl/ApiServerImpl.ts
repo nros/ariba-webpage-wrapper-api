@@ -14,6 +14,8 @@ import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl";
 import { ConfigMiddleware } from "./ConfigMiddleware";
 import { AribaApiMiddleware } from "./AribaApiMiddleware";
 
+const DAY = 1000 * 60 * 60 * 24;
+
 export class ApiServerImpl implements IApiServer {
     private _server?: http.Server;
     private _app?: express.Express;
@@ -114,8 +116,13 @@ export class ApiServerImpl implements IApiServer {
         app.get("/api/orders/:id/confirm", this.callAriba((params, ariba) =>
             ariba.confirmPurchaseOrder(
                 "" + params.id,
-                "" + params.estimatedDeliveryDate,
-                "" + params.estimatedShippingDate,
+
+                // if omitted, estimate the delivery and shipping dates
+                (params.estimatedDeliveryDate && "" + params.estimatedDeliveryDate)
+                    || new Date(Date.now() + 7*DAY).toUTCString(),
+                (params.estimatedShippingDate && "" + params.estimatedShippingDate)
+                    || new Date(Date.now() + 2*DAY).toUTCString(),
+
                 "" + params.supplierOrderId,
             )
         ));
@@ -131,14 +138,6 @@ export class ApiServerImpl implements IApiServer {
         aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi) => Promise<T>,
     ): express.RequestHandler {
         return (request, response, next) => {
-            /*
-            response.setTimeout(2 * 60 * 1000, () => {
-                const err = new Error('Service timed out') as HttpError;
-                err.status = 503;
-                next(err);
-            });
-            */
-
             const ariba = this.extractAribeWebsiteFromRequest(request);
 
             if (!ariba) {
