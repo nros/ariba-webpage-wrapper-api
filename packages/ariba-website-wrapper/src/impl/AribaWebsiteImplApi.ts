@@ -16,7 +16,6 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         this._logger = factory.createLogger("AribaWebsiteImplApi");
     }
 
-
     public async confirmPurchaseOrder(
         purchaseOrderId: string,
         estimatedDeliveryDate: string,
@@ -58,7 +57,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
         const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
         try {
-            return purchaseOrderPage.confirmPurchaseOrder(
+            return await purchaseOrderPage.confirmPurchaseOrder(
                 purchaseOrderId,
                 new Date(estimatedDeliveryDate),
                 estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
@@ -84,7 +83,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         this._logger.info(`Create invoice for purchase order with ID ${purchaseOrderId}.`);
         const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
         try {
-            return purchaseOrderPage.createInvoice(
+            return await purchaseOrderPage.createInvoice(
                 purchaseOrderId,
                 logisticsOrderId,
                 invoiceNumber,
@@ -122,9 +121,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         this._logger.info(`Getting last invoice number.`);
         const page = await this._factory.createInvoicePage();
         try {
-            return page.getLatestInvoiceNumber();
+            return await page.getLatestInvoiceNumber();
         } finally {
-            page.close();
+            await page.close();
         }
     }
 }
