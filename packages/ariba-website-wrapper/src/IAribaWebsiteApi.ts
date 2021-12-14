@@ -34,6 +34,27 @@ export interface IAribaWebsiteApi {
         supplierOrderId?: string,
     ): Promise<IPurchaseOrder | undefined>;
 
+    /**
+     * Sends a shipping notice
+     *
+     * @param purchaseOrderId The ID of the purchase order to confirm.
+     * @param packingSlipId The ID on the label of the package
+     * @param carrierName The name of the carrier
+     * @param trackingNumber
+     * @param trackingUrl The tracking URL
+     * @param estimatedDeliveryDate The estimated date of delivery
+     * @param shippingDate (optional)
+     */
+    createShippingNotice(
+        purchaseOrderId: string,
+        packingSlipId: string,
+        carrierName: string,
+        trackingNumber: string,
+        trackingUrl: string,
+        estimatedDeliveryDate: Date,
+        shippingDate?: Date,
+    ): Promise<IPurchaseOrder | undefined>;
+
     createInvoice(
         purchaseOrderId: string,
         logisticsOrderId: string,

@@ -136,6 +136,21 @@ export class ApiServerImpl implements IApiServer {
             )
         ));
 
+        app.post("/orders/:id/shipping-notice", this.callAriba((params, ariba) =>
+            ariba.createShippingNotice(
+                (params.id && params.id + "") || "",
+                (params.packingSlipId && params.packingSlipId + "") || "",
+                (params.carrierName && params.carrierName + "") || "",
+                (params.trackingNumber && params.trackingNumber + "") || "",
+                (params.trackingUrl && params.trackingUrl + "") || "",
+                // if omitted, estimate the delivery and shipping dates
+                (params.estimatedDeliveryDate && new Date("" + params.estimatedDeliveryDate))
+                || new Date(Date.now() + 5*DAY),
+                (params.shippingDate && new Date("" + params.shippingDate))
+                || new Date(Date.now()),
+            )
+        ));
+
         return app;
     }
 

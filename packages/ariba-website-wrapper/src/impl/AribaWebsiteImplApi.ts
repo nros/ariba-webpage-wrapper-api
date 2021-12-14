@@ -41,7 +41,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
 
         if (estimatedShippingDate) {
             try {
-                const check = new Date(estimatedDeliveryDate);
+                const check = new Date(estimatedShippingDate);
                 shippingDateTimestamp = check.getTime();
 
                 this._logger.debug("Estimated shipping date is: ", check);
@@ -62,6 +62,64 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                 new Date(estimatedDeliveryDate),
                 estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
                 supplierOrderId,
+            );
+        } finally {
+            await purchaseOrderPage.close();
+        }
+    }
+
+    public async createShippingNotice(
+        purchaseOrderId: string,
+        packingSlipId: string,
+        carrierName: string,
+        trackingNumber: string,
+        trackingUrl: string,
+        estimatedDeliveryDate: Date,
+        shippingDate?: Date,
+    ): Promise<IPurchaseOrder | undefined> {
+        //
+        if (!purchaseOrderId) {
+            throw new Error("Invalid purchase order ID");
+        }
+
+        let deliveryDateTimestamp: number;
+        let shippingDateTimestamp: number;
+
+        try {
+            const check = new Date(estimatedDeliveryDate);
+            deliveryDateTimestamp = check.getTime();
+
+            this._logger.debug("Estimated delivery date is: ", check);
+        } catch (error) {
+            throw new Error("Parameter 'estimatedDeliveryDate' is an invalid date");
+        }
+
+        if (shippingDate) {
+            try {
+                const check = new Date(shippingDate);
+                shippingDateTimestamp = check.getTime();
+
+                this._logger.debug("Shipping date is: ", check);
+            } catch (error) {
+                throw new Error("Parameter 'shippingDate' is an invalid date");
+            }
+
+            if (deliveryDateTimestamp < shippingDateTimestamp) {
+                throw new Error("Delivery date can not be earlier than the shipping date.");
+            }
+        }
+
+        this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
+        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+        try {
+            return await purchaseOrderPage.createShippingNotice(
+                purchaseOrderId,
+                packingSlipId,
+                carrierName,
+                trackingNumber,
+                trackingUrl,
+                new Date(estimatedDeliveryDate),
+                shippingDate ? new Date(shippingDate) : undefined,
             );
         } finally {
             await purchaseOrderPage.close();
