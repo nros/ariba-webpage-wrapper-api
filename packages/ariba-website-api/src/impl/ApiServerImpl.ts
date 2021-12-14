@@ -109,11 +109,11 @@ export class ApiServerImpl implements IApiServer {
     }
 
     protected async registerApiHandlers(app: express.Express): Promise<express.Express> {
-        app.get("/api/orders/:id/status", this.callAriba((params, ariba) =>
+        app.get("/orders/:id/status", this.callAriba((params, ariba) =>
             ariba.getPurchaseOrderStatus("" + params.id)
         ));
 
-        app.get("/api/orders/:id/confirm", this.callAriba((params, ariba) =>
+        app.get("/orders/:id/confirm", this.callAriba((params, ariba) =>
             ariba.confirmPurchaseOrder(
                 "" + params.id,
 
