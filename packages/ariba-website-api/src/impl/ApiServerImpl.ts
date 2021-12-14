@@ -5,6 +5,7 @@ import type { IAribaWebsite, IAribaWebsiteApi } from "ariba-website-wrapper";
 import type { RequestWithAribaWebsite } from "./AribaApiMiddleware";
 import type { IApiServer, HttpError } from "../IApiServer";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
+import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
 
 import express from "express";
 import bodyParser from "body-parser";
@@ -109,6 +110,14 @@ export class ApiServerImpl implements IApiServer {
     }
 
     protected async registerApiHandlers(app: express.Express): Promise<express.Express> {
+        app.get("/whoami", (request, response) => {
+            response.status(200).json({
+                user: (request as RequestWithAuthentication).auth.user,
+                hasAribaUser: !!(request as RequestWithAuthentication).auth.aribaUsername,
+                hasAribaPasswort: !!(request as RequestWithAuthentication).auth.aribaPassword,
+            }).end();
+        });
+
         app.get("/orders/:id/status", this.callAriba((params, ariba) =>
             ariba.getPurchaseOrderStatus("" + params.id)
         ));
