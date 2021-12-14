@@ -122,7 +122,7 @@ export class ApiServerImpl implements IApiServer {
             ariba.getPurchaseOrderStatus("" + params.id)
         ));
 
-        app.get("/orders/:id/confirm", this.callAriba((params, ariba) =>
+        app.post("/orders/:id/confirm", this.callAriba((params, ariba) =>
             ariba.confirmPurchaseOrder(
                 "" + params.id,
 
