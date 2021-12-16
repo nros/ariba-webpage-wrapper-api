@@ -16,9 +16,9 @@ export abstract class BaseAribaDialogPageImpl extends BaseAribaPageImpl {
 
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
-            page.evaluate(() => {
-                window.ariba.Handlers.fakeClick(jQuery("button:contains('Done'):first")[0]);
-            }),
+            page.evaluate(() =>
+                window.ariba.Handlers.fakeClick(jQuery("button:contains('Done'):first")[0]),
+            ),
             page.waitForNavigation({ waitUntil: "networkidle0" }),
         ]);
         return this;

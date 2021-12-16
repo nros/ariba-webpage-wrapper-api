@@ -54,7 +54,7 @@ export class AribaApiMiddleware extends BaseMiddleware implements IMiddleware, I
             if (userData && user) {
                 let cacheEntry = this._cachedAribaWebsites[user];
 
-                if ((!cacheEntry || !cacheEntry.ariba) && !userData?.aribaUsername || !userData?.aribaPassword) {
+                if ((!cacheEntry || !cacheEntry.ariba) && (!userData?.aribaUsername || !userData?.aribaPassword)) {
                     throw new Error("Missing Ariba user name or password to connect to Ariba website.");
 
                 } else if (!cacheEntry?.ariba) {

@@ -12,14 +12,14 @@ export interface IApiConfiguration extends IAribaConfiguration {
     };
 }
 
-    if  (!configFileName) {
 export function readConfigurationFile<T>(configFileName: string): PromiseLike<T> {
+    if (!configFileName) {
         return Promise.resolve({} as T);
     }
 
     const configFile = path.resolve(configFileName);
 
-    let jsonData: string = "";
+    let jsonData = "";
     return fs
         .readFile(configFile)
         .then((fileBuffer) => {

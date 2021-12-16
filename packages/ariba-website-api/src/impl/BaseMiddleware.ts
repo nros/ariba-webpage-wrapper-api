@@ -23,7 +23,9 @@ export abstract class BaseMiddleware implements IMiddleware {
         return app;
     }
 
-    public close(): void { }
+    public close(): void {
+        // nothing to do in the base class.
+    }
 
     protected abstract getMiddleware(): PromiseLike<TAsyncMiddleware[]>;
 
@@ -32,7 +34,7 @@ export abstract class BaseMiddleware implements IMiddleware {
         middleware: TAsyncMiddleware,
     ) : Promise<express.Express> {
         app.use((request, response, next) => {
-            middleware(request, response).then(() => next(), (error) => response.status(500).json(error))
+            middleware(request, response).then(() => next(), (error) => response.status(500).json(error));
         });
 
         return app;

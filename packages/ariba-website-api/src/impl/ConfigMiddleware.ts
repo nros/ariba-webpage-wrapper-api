@@ -3,7 +3,7 @@ import type { IMiddleware } from "../IMiddleware";
 import type { IApiConfiguration } from "../ApiConfiguration";
 
 import { readConfiguaration } from "../ApiConfiguration";
-import {IApiServer} from "../IApiServer";
+import { IApiServer } from "../IApiServer";
 
 export type RequestWithConfig = express.Request & {
     apiConfig: IApiConfiguration;
@@ -39,5 +39,7 @@ export class ConfigMiddleware implements IMiddleware {
         return app;
     }
 
-    public close(): void { }
+    public close(): void {
+        // nothing to do in the base class.
+    }
 }

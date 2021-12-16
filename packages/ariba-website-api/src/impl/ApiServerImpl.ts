@@ -3,7 +3,7 @@ import type * as http from "http";
 import type { ParsedQs } from "qs";
 import type { IAribaWebsite, IAribaWebsiteApi } from "ariba-website-wrapper";
 import type { RequestWithAribaWebsite } from "./AribaApiMiddleware";
-import type { IApiServer, HttpError } from "../IApiServer";
+import type { HttpError, IApiServer } from "../IApiServer";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
 import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
 
@@ -52,8 +52,8 @@ export class ApiServerImpl implements IApiServer {
         app = await new AribaApiMiddleware().registerMiddleware(app, this);
         app = await this.registerApiHandlers(app);
 
-        expressAppServer.use('/api', app);
-        expressAppServer.use('/', function (request, response) {
+        expressAppServer.use("/api", app);
+        expressAppServer.use("/", function (request, response) {
             response.sendStatus(404);
         });
 
@@ -127,10 +127,12 @@ export class ApiServerImpl implements IApiServer {
                 "" + params.id,
 
                 // if omitted, estimate the delivery and shipping dates
-                (params.estimatedDeliveryDate && "" + params.estimatedDeliveryDate)
-                    || new Date(Date.now() + 7*DAY).toUTCString(),
-                (params.estimatedShippingDate && "" + params.estimatedShippingDate)
-                    || new Date(Date.now() + 2*DAY).toUTCString(),
+                params.estimatedDeliveryDate
+                    ? "" + params.estimatedDeliveryDate
+                    : new Date(Date.now() + 7 * DAY).toUTCString(),
+                params.estimatedShippingDate
+                    ? "" + params.estimatedShippingDate
+                    : new Date(Date.now() + 2 * DAY).toUTCString(),
 
                 "" + params.supplierOrderId,
             )
@@ -144,10 +146,10 @@ export class ApiServerImpl implements IApiServer {
                 (params.trackingNumber && params.trackingNumber + "") || "",
                 (params.trackingUrl && params.trackingUrl + "") || "",
                 // if omitted, estimate the delivery and shipping dates
-                (params.estimatedDeliveryDate && new Date("" + params.estimatedDeliveryDate))
-                || new Date(Date.now() + 5*DAY),
-                (params.shippingDate && new Date("" + params.shippingDate))
-                || new Date(Date.now()),
+                (params.estimatedDeliveryDate && new Date("" + params.estimatedDeliveryDate)) ||
+                new Date(Date.now() + 5 * DAY),
+                (params.shippingDate && new Date("" + params.shippingDate)) ||
+                new Date(Date.now()),
             )
         ));
 

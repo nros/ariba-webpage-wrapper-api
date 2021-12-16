@@ -35,7 +35,7 @@ export class AuthenticatorJsonImpl extends BaseMiddleware implements IMiddleware
 
     public async registerMiddleware(app: express.Express, apiServer: IApiServer): Promise<express.Express> {
         // install authentication middleware
-        app.use(basicAuth({ users: await this.getAuthDatabase() }))
+        app.use(basicAuth({ users: await this.getAuthDatabase() }));
         return await super.registerMiddleware(app, apiServer);
     }
 
@@ -71,7 +71,7 @@ export class AuthenticatorJsonImpl extends BaseMiddleware implements IMiddleware
                 (request as RequestWithAuthentication).auth = {
                     ...usersDB[authData.user],
                     ...authData,
-                } ;
+                };
             }
         };
 
