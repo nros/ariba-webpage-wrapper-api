@@ -12,8 +12,8 @@ export interface IApiConfiguration extends IAribaConfiguration {
     };
 }
 
-export function readConfigurationFile<T>(configFileName: string): Promise<T> {
     if  (!configFileName) {
+export function readConfigurationFile<T>(configFileName: string): PromiseLike<T> {
         return Promise.resolve({} as T);
     }
 
@@ -38,6 +38,6 @@ export function readConfigurationFile<T>(configFileName: string): Promise<T> {
  *
  * @param configFileName (optional) a specific config file to read. If unset, then {@link CONFIG_FILE_NAME} is used.
  */
-export function readConfiguaration(configFileName?: string): Promise<IApiConfiguration> {
+export function readConfiguaration(configFileName?: string): PromiseLike<IApiConfiguration> {
     return readConfigurationFile<IApiConfiguration>(configFileName || CONFIG_FILE_NAME);
 }

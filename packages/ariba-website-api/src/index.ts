@@ -7,7 +7,7 @@ let apiServer: IApiServer;
 function terminateProgram(): Promise<unknown> {
     console.log("\nTERMINATING");
     if (apiServer) {
-        return apiServer.stop().catch(console.error);
+        return Promise.resolve(apiServer.stop()).catch(console.error);
     }
 
     return Promise.resolve();

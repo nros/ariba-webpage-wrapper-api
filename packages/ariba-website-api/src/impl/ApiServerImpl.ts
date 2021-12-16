@@ -159,7 +159,7 @@ export class ApiServerImpl implements IApiServer {
     }
 
     private callAriba<T>(
-        aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi) => Promise<T>,
+        aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi) => PromiseLike<T>,
     ): express.RequestHandler {
         return (request, response, next) => {
             const ariba = this.extractAribeWebsiteFromRequest(request);

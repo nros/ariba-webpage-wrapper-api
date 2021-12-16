@@ -45,7 +45,7 @@ export class AribaApiMiddleware extends BaseMiddleware implements IMiddleware, I
         this._cachedAribaWebsites = {};
     }
 
-    protected getMiddleware(): Promise<TAsyncMiddleware[]> {
+    protected getMiddleware(): PromiseLike<TAsyncMiddleware[]> {
         const middleware: TAsyncMiddleware = async (request) => {
             // authentication has been performed previously
             const userData = (request as RequestWithAuthentication).auth;

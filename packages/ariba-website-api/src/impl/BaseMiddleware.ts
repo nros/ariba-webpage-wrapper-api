@@ -3,7 +3,7 @@ import type { IMiddleware } from "../IMiddleware";
 import type { IApiServer } from "../IApiServer";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
 
-export type TAsyncMiddleware = (request: express.Request, response: express.Response) => Promise<void>;
+export type TAsyncMiddleware = (request: express.Request, response: express.Response) => PromiseLike<void>;
 
 export abstract class BaseMiddleware implements IMiddleware {
     public async registerMiddleware(app: express.Express, apiServer: IApiServer): Promise<express.Express> {
@@ -25,7 +25,7 @@ export abstract class BaseMiddleware implements IMiddleware {
 
     public close(): void { }
 
-    protected abstract getMiddleware(): Promise<TAsyncMiddleware[]>;
+    protected abstract getMiddleware(): PromiseLike<TAsyncMiddleware[]>;
 
     protected async registerAsyncMiddleware(
         app: express.Express,

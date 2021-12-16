@@ -8,8 +8,8 @@ export interface IApiServer {
     /**
      * Start the API server
      */
-    start(): Promise<IApiServer>;
-    stop(): Promise<IApiServer>;
+    start(): PromiseLike<IApiServer>;
+    stop(): PromiseLike<IApiServer>;
 
     registerTimerEvent(middleware: IMiddlewareNeedsTimer, interval: number) : void;
     registerCloseCleanup(callback: () => void) : void;

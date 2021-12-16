@@ -63,7 +63,7 @@ export class AuthenticatorJsonImpl extends BaseMiddleware implements IMiddleware
         return this._userDatabase || {};
     }
 
-    protected getMiddleware(): Promise<TAsyncMiddleware[]> {
+    protected getMiddleware(): PromiseLike<TAsyncMiddleware[]> {
         const userDataMiddleware: TAsyncMiddleware = async (request) => {
             const usersDB = await this.getUserDB();
             const authData = (request as RequestWithAuthentication).auth;
