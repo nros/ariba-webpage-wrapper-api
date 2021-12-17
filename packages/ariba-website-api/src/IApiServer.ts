@@ -2,6 +2,11 @@ import type { IMiddlewareNeedsTimer } from "./IMiddlewareNeedsTimer";
 
 export interface HttpError extends Error { status: number }
 
+export interface HttpResponseErrorMessage {
+    error: number;
+    message: string;
+}
+
 export interface IApiServer {
     readonly port: number;
 

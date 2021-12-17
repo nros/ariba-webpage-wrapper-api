@@ -2,10 +2,16 @@
 import type * as http from "http";
 import type { ParsedQs } from "qs";
 import type { IAribaWebsite, IAribaWebsiteApi } from "ariba-website-wrapper";
+import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
 import type { RequestWithAribaWebsite } from "./AribaApiMiddleware";
 import type { HttpError, IApiServer } from "../IApiServer";
+import type {
+    ITaskManagerTaskControl,
+    Task,
+    TLongRunningTaskResultGenerator,
+    TRequestWithTaskManager
+} from "../ILongRunningTaskManager";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
-import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
 
 import express from "express";
 import bodyParser from "body-parser";
@@ -14,6 +20,8 @@ import nocache from "nocache";
 import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl";
 import { ConfigMiddleware } from "./ConfigMiddleware";
 import { AribaApiMiddleware } from "./AribaApiMiddleware";
+import { LongRunningTaskMiddleware } from "./LongRunningTaskMiddleware";
+import { sendResponseJson, sendResponseError } from "./http-utils";
 
 const DAY = 1000 * 60 * 60 * 24;
 
@@ -49,6 +57,7 @@ export class ApiServerImpl implements IApiServer {
 
         app = await new AuthenticatorJsonImpl().registerMiddleware(app, this);
         app = await this._configMiddleware.registerMiddleware(app, this);
+        app = await new LongRunningTaskMiddleware().registerMiddleware(app, this);
         app = await new AribaApiMiddleware().registerMiddleware(app, this);
         app = await this.registerApiHandlers(app);
 
@@ -118,12 +127,13 @@ export class ApiServerImpl implements IApiServer {
             }).end();
         });
 
-        app.get("/orders/:id/status", this.callAriba((params, ariba) =>
-            ariba.getPurchaseOrderStatus("" + params.id)
+        app.get("/orders/:id/status", this.callAriba(
+            (params, ariba) => ariba.getPurchaseOrderStatus("" + params.id),
+            false,
         ));
 
-        app.post("/orders/:id/confirm", this.callAriba((params, ariba) =>
-            ariba.confirmPurchaseOrder(
+        app.post("/orders/:id/confirm", this.callAriba((params, ariba) => {
+            return ariba.confirmPurchaseOrder(
                 "" + params.id,
 
                 // if omitted, estimate the delivery and shipping dates
@@ -135,11 +145,11 @@ export class ApiServerImpl implements IApiServer {
                     : new Date(Date.now() + 2 * DAY).toUTCString(),
 
                 "" + params.supplierOrderId,
-            )
-        ));
+            );
+        }, true));
 
-        app.post("/orders/:id/shipping-notice", this.callAriba((params, ariba) =>
-            ariba.createShippingNotice(
+        app.post("/orders/:id/shipping-notice", this.callAriba((params, ariba) => {
+            return ariba.createShippingNotice(
                 (params.id && params.id + "") || "",
                 (params.packingSlipId && params.packingSlipId + "") || "",
                 (params.carrierName && params.carrierName + "") || "",
@@ -150,8 +160,8 @@ export class ApiServerImpl implements IApiServer {
                 new Date(Date.now() + 5 * DAY),
                 (params.shippingDate && new Date("" + params.shippingDate)) ||
                 new Date(Date.now()),
-            )
-        ));
+            );
+        }, true));
 
         return app;
     }
@@ -161,28 +171,46 @@ export class ApiServerImpl implements IApiServer {
     }
 
     private callAriba<T>(
-        aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi) => PromiseLike<T>,
+        aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi, taskControl?: ITaskManagerTaskControl) => PromiseLike<T>,
+        isLongRunning?: boolean,
     ): express.RequestHandler {
+
         return (request, response, next) => {
             const ariba = this.extractAribeWebsiteFromRequest(request);
 
             if (!ariba) {
-                response.status(500).json({
-                    message: "No Ariba website wrapper has been initialised!",
-                });
+                sendResponseError(response)("No Ariba website wrapper has been initialised!");
 
             } else {
-                ariba.startSession()
-                    .then((webSite) => webSite.getAribaWebsiteApi())
-                    .then((api) =>
-                        aribaCaller({ ...request.query, ...request.params}, api).then(
-                            (responseBody) => response.status(200).json(responseBody),
-                            (error: HttpError) => response.json({ message: "" + error }).sendStatus(error.status || 500),
-                        ).then(() => response.end(), console.error),
+                const taskManager = (request as TRequestWithTaskManager).taskManager;
 
-                        console.error
-                    )
-                ;
+                if (isLongRunning && taskManager) {
+                    const command: Task = (taskControl) => {
+                        return ariba
+                            .startSession()
+                            .then(taskControl.checkAndPass)
+                            .then((webSite) => webSite.getAribaWebsiteApi())
+                            .then(taskControl.checkAndPass)
+                            .then((api) => aribaCaller({ ...request.query, ...request.params }, api, taskControl))
+                            .then(
+                                (data) =>
+                                    ((response) => sendResponseJson(response)(data)) as TLongRunningTaskResultGenerator,
+                                (error: HttpError) =>
+                                    ((response) => sendResponseError(response)(error)) as TLongRunningTaskResultGenerator,
+                            )
+                            ;
+                    };
+
+                    taskManager.executeLongRunningTask(command, request, response, next);
+
+                } else {
+                    ariba
+                        .startSession()
+                        .then((webSite) => webSite.getAribaWebsiteApi())
+                        .then((api) => aribaCaller({ ...request.query, ...request.params }, api))
+                        .then(sendResponseJson(response))
+                        .catch(sendResponseError(response));
+                }
             }
         };
     }
