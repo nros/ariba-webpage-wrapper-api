@@ -59,7 +59,15 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         // first, check order status. In case of error, assume already confirmed
         const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.CONFIRMED);
-        if (state !== TPurchaseOrderState.CONFIRMED) {
+        if (state === TPurchaseOrderState.DELIVERY_INITIATED) {
+            this._logger.info(
+                `A shipping notice for purchase order with ID ${purchaseOrderId} has already been created`,
+            );
+            const error = new Error(`A shipping notice for purchase order with ID ${purchaseOrderId} already exists`);
+            (error as unknown as Record<string, number>).status = 409; // set HTTP error code 409
+            throw error;
+
+        } else if (state !== TPurchaseOrderState.CONFIRMED) {
             throw Error("Purchase order must be confirmed first to create a shipping notice.");
         }
 
