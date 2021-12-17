@@ -32,9 +32,6 @@
       "dom.iterable",
       "scripthost"
     ],
-    "paths": {
-      "@rinaca/*": ["packages/*/lib/esm", "packages/*/src"]
-    },
     "types": [
       "mocha",
       "chai"
