@@ -4,14 +4,17 @@ import { ApiServerImpl } from "./impl/ApiServerImpl.js";
 
 // install signal handlers
 let apiServer: IApiServer;
-function terminateProgram(): Promise<unknown> {
+async function terminateProgram(): Promise<void> {
     console.log("\nTERMINATING");
     if (apiServer) {
-        return Promise.resolve(apiServer.stop()).catch(console.error);
+        try {
+            await apiServer.stop();
+        } catch (error) {
+            console.log("FAILED TO STOP SERVER: ", error);
+        }
     }
-
-    return Promise.resolve();
 }
+
 process.on("SIGINT", terminateProgram);
 process.on("SIGTERM", terminateProgram);
 process.on("SIGABRT", terminateProgram);
