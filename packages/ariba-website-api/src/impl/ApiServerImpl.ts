@@ -200,16 +200,18 @@ export class ApiServerImpl implements IApiServer {
 
         app.post("/orders/:id/shipping-notice", this.callAriba((params, ariba) => {
             return ariba.createShippingNotice(
-                (params.id && params.id + "") || "",
-                (params.packingSlipId && params.packingSlipId + "") || "",
-                (params.carrierName && params.carrierName + "") || "",
-                (params.trackingNumber && params.trackingNumber + "") || "",
-                (params.trackingUrl && params.trackingUrl + "") || "",
+                (params.id ? params.id + "" : ""),
+                (params.packingSlipId ? params.packingSlipId + "" : ""),
+                (params.carrierName ? params.carrierName + "" : ""),
+                (params.trackingNumber ? params.trackingNumber + "" : ""),
+                (params.trackingUrl ? params.trackingUrl + "" : ""),
                 // if omitted, estimate the delivery and shipping dates
-                (params.estimatedDeliveryDate && new Date("" + params.estimatedDeliveryDate)) ||
-                new Date(Date.now() + 5 * DAY),
-                (params.shippingDate && new Date("" + params.shippingDate)) ||
-                new Date(Date.now()),
+                (params.estimatedDeliveryDate
+                    ? new Date("" + params.estimatedDeliveryDate)
+                    : new Date(Date.now() + 5 * DAY)),
+                (params.shippingDate
+                    ? new Date("" + params.shippingDate)
+                    : new Date(Date.now())),
             );
         }, true));
 
@@ -221,12 +223,18 @@ export class ApiServerImpl implements IApiServer {
     }
 
     private callAriba<T>(
-        aribaCaller: (params: ParsedQs, ariba: IAribaWebsiteApi, taskControl?: ITaskManagerTaskControl) => PromiseLike<T>,
+        aribaCaller: (params: Record<string, unknown>, ariba: IAribaWebsiteApi, taskControl?: ITaskManagerTaskControl) => PromiseLike<T>,
         isLongRunning?: boolean,
     ): express.RequestHandler {
 
         return (request, response, next) => {
             this.logRequest(request);
+
+            let bodyParams: Record<string, unknown> = {};
+            if (request.body && typeof request.body === "object") {
+                bodyParams = { ...request.body };
+            }
+
             const ariba = this.extractAribeWebsiteFromRequest(request);
 
             if (!ariba) {
@@ -242,7 +250,7 @@ export class ApiServerImpl implements IApiServer {
                             .then(taskControl.checkAndPass)
                             .then((webSite) => webSite.getAribaWebsiteApi())
                             .then(taskControl.checkAndPass)
-                            .then((api) => aribaCaller({ ...request.query, ...request.params }, api, taskControl))
+                            .then((api) => aribaCaller({ ...bodyParams, ...request.query, ...request.params }, api, taskControl))
                             .then(
                                 (data) =>
                                     ((response) => sendResponseJson(response)(data)) as TLongRunningTaskResultGenerator,
@@ -258,7 +266,7 @@ export class ApiServerImpl implements IApiServer {
                     ariba
                         .startSession()
                         .then((webSite) => webSite.getAribaWebsiteApi())
-                        .then((api) => aribaCaller({ ...request.query, ...request.params }, api))
+                        .then((api) => aribaCaller({ ...bodyParams, ...request.query, ...request.params }, api))
                         .then(sendResponseJson(response))
                         .catch(sendResponseError(response));
                 }
