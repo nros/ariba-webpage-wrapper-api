@@ -82,29 +82,37 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             throw new Error("Invalid purchase order ID");
         }
 
+        if (!carrierName) {
+            throw new Error(`Carrier is invalid '${carrierName}'`);
+        }
+
         let deliveryDateTimestamp: number;
         let shippingDateTimestamp: number;
 
         try {
+            this._logger.debug(`Checking estimated delivery date: ${estimatedDeliveryDate}`);
+
             const check = new Date(estimatedDeliveryDate);
             deliveryDateTimestamp = check.getTime();
 
-            this._logger.debug("Estimated delivery date is: ", check);
+            this._logger.debug(`Estimated delivery date is: ${check}`);
         } catch (error) {
             throw new Error("Parameter 'estimatedDeliveryDate' is an invalid date");
         }
 
         if (shippingDate) {
             try {
+                this._logger.debug(`Checking estimated shipping date: ${shippingDate}`);
+
                 const check = new Date(shippingDate);
                 shippingDateTimestamp = check.getTime();
 
-                this._logger.debug("Shipping date is: ", check);
+                this._logger.debug(`Shipping date is: ${check}`);
             } catch (error) {
                 throw new Error("Parameter 'shippingDate' is an invalid date");
             }
 
-            if (deliveryDateTimestamp < shippingDateTimestamp) {
+            if (deliveryDateTimestamp <= shippingDateTimestamp) {
                 throw new Error("Delivery date can not be earlier than the shipping date.");
             }
         }
