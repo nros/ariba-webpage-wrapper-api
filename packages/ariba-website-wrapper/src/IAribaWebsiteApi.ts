@@ -58,7 +58,7 @@ export interface IAribaWebsiteApi {
     createInvoice(
         purchaseOrderId: string,
         logisticsOrderId: string,
-        invoiceNumber: string,
+        invoiceNumber?: string,
     ): Promise<IPurchaseOrder | undefined>;
 
     /**

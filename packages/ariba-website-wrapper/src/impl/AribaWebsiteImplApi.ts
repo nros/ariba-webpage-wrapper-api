@@ -129,8 +129,12 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     public async createInvoice(
         purchaseOrderId: string,
         logisticsOrderId: string,
-        invoiceNumber: string,
+        invoiceNumber?: string,
     ): Promise<IPurchaseOrder | undefined> {
+        if (!invoiceNumber) {
+            invoiceNumber = await this.getNextInvoiceNumber();
+        }
+
         if (!invoiceNumber) {
             throw new Error("Invalid invoice number!");
         }
@@ -180,6 +184,16 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
         const page = await this._factory.createInvoicePage();
         try {
             return await page.getLatestInvoiceNumber();
+        } finally {
+            await page.close();
+        }
+    }
+
+    public async getNextInvoiceNumber(): Promise<string> {
+        this._logger.info(`Getting last invoice number.`);
+        const page = await this._factory.createInvoicePage();
+        try {
+            return await page.getNextInvoiceNumber();
         } finally {
             await page.close();
         }
