@@ -69,6 +69,16 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
             next();
         });
 
+        app.get("/tasks", (request, response) => {
+            apiServer.logRequest(request);
+            response
+                .status(constants.HTTP_STATUS_OK)
+                .json({
+                    queuesTasks: Object.getOwnPropertyNames(this._longRunningTasks),
+                    finishedTasks: Object.getOwnPropertyNames(this._operationResults),
+                });
+        });
+
         app.get("/tasks/:id/status", (request, response) => {
             apiServer.logRequest(request);
             const id = request.params.id;
