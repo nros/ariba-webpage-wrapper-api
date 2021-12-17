@@ -21,7 +21,7 @@ import { sendResponseError } from "./http-utils.js";
 const KEEP_TIME_OF_RESULT_AFTER_FINISH = 1000 * 60 * 10;
 
 export interface HttpResponseTaskQueueMessage {
-    status: string & ("QUEUED" | "WAITING" | "RUNNING" | "CANCELLED" | "FINISHED");
+    status: string & ("QUEUED" | "WAITING" | "RUNNING" | "CANCELLED" | "FINISHED" | "FAILED");
     message: string;
     taskId: string;
 }
@@ -29,11 +29,13 @@ export interface HttpResponseTaskQueueMessage {
 interface IOperationResult {
     creationTime: Date;
     httpResultGenerator: TLongRunningTaskResultGenerator;
+    isFailed: boolean;
 }
 
 interface IRunningTask {
     task?: Task;
     isStarted: boolean;
+    isFailed: boolean;
     waitingForTask: PromiseLike<void>;
     control: ITaskManagerTaskControl;
 }
@@ -85,7 +87,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                 response
                     .status(constants.HTTP_STATUS_OK)
                     .json({
-                        status: "FINISHED",
+                        status: this._operationResults[id].isFailed ? "FAILED" : "FINISHED",
                         message: "Task has finished",
                         taskId: id,
                     } as HttpResponseTaskQueueMessage)
@@ -242,6 +244,8 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                     .then(() => taskControl)
                     .then(task)
                     .catch((error: HttpError) => {
+                        this._longRunningTasks[id].isFailed = true;
+
                         return (async (response) => {
                             sendResponseError(await response)(error);
                         }) as TLongRunningTaskResultGenerator;
@@ -254,12 +258,13 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                 this._queue.add(longRunningTaskFunc).then();
 
             }).then((responseGenerator) => {
-                delete this._longRunningTasks[id];
-
                 this._operationResults[id] = {
                     creationTime: new Date(),
                     httpResultGenerator: responseGenerator,
+                    isFailed: this._longRunningTasks[id].isFailed,
                 };
+
+                delete this._longRunningTasks[id];
 
                 this.cleanQueues();
             })
@@ -268,6 +273,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
         this._longRunningTasks[id] = {
             task,
             isStarted: false,
+            isFailed: false,
             waitingForTask,
             control: taskControl,
         };
