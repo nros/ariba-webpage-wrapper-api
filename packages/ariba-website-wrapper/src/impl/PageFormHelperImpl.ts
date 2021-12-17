@@ -66,7 +66,7 @@ export class PageFormHelperImpl implements PageFormHelperImpl {
         // --- set the search time frame
         // open the advanced pane
         this._logger.debug("Set purchase order filter date range.");
-        (await page.evaluate(() => {
+        (await page.evaluate((isUseNone) => {
             let timeRangeNode: HTMLElement | undefined;
             let days = 0;
 
@@ -98,7 +98,7 @@ export class PageFormHelperImpl implements PageFormHelperImpl {
             } else {
                 throw new Error("No time range can be found!");
             }
-        }));
+        }, !!isUseNone));
 
         // the drop down triggers an XHR load from the server
         this._logger.debug("Waiting XHR to happen after setting purchase order filter date range.");
