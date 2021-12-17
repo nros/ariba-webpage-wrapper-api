@@ -24,11 +24,12 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
                 }
                 return number;
             })
-            .then((number) => {
-                if (!number) {
+            .then((num) => {
+                this._logger.debug(`Invoice number has been read to: ${num}`);
+                if (!num) {
                     throw new Error("Failed to read last invoice number from web page");
                 }
-                return number;
+                return num;
             })
         ;
     }
@@ -102,12 +103,15 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         );
 
         if (isEmpty) {
-            return this.formatNewInvoiceNumber(1);
+            const startInvoiceNumber = this.formatNewInvoiceNumber(1);
+            this._logger.warn(`NO invoice number can be found! Using '0' to start with:  ${startInvoiceNumber}`);
+            return startInvoiceNumber;
         }
 
         // get maximum number in the list
         // TODO!
 
+        this._logger.debug("Reading last invoice number.");
         throw new Error("NOT YET IMPLEMENTED");
     }
 
