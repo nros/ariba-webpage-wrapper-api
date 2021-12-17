@@ -75,7 +75,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 window.ariba.Handlers.fakeClick(jQuery("button:contains('Create Ship Notice')").first()[0]),
             ),
             page.waitForNavigation(),
-        ]);
+        ]).catch(this._logger.error);
 
         // Select "Other" carrier
         this._logger.debug(`Selecting 'other' carrier!`);
