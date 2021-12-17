@@ -163,14 +163,22 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
         response: Response<ResBody | HttpResponseTaskQueueMessage, Locals>,
     ): void {
 
-        const task = this.createWaiterForPreviousTask(newTask, request);
-        const newTaskID = this.addLongRunningTask(task);
+        if ((request.params as unknown as ParamsDictionary).forceImmediateExection === "true") {
+            Promise.resolve(newTask(new TaskControlImpl()))
+                .then((responseGenerator) => responseGenerator(Promise.resolve(response as express.Response)))
+                .catch(sendResponseError(response as express.Response))
+            ;
 
-        response.status(constants.HTTP_STATUS_ACCEPTED).json({
-            status: "QUEUED",
-            message: "Task accepted for execution ...",
-            taskId: newTaskID,
-        } as HttpResponseTaskQueueMessage);
+        } else {
+            const task = this.createWaiterForPreviousTask(newTask, request);
+            const newTaskID = this.addLongRunningTask(task);
+
+            response.status(constants.HTTP_STATUS_ACCEPTED).json({
+                status: "QUEUED",
+                message: "Task accepted for execution ...",
+                taskId: newTaskID,
+            } as HttpResponseTaskQueueMessage);
+        }
     }
 
 
