@@ -108,6 +108,26 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
     protected async clickButtonWithText(page: Page, text: string, tag?: string): Promise<IAribaPage> {
         tag = tag || "button";
 
+        const logger = this.createLogger("BaseAribaPageImpl");
+
+        logger.debug(`Wait for button (tag: ${tag}) with text ${text}`);
+        await page.evaluate((text, tag) => {
+            async function waitForButton(remainingTries: number): Promise<void> {
+                const $button = jQuery(tag + ":contains('" + text + "'):first");
+                if ($button.length === 0 && remainingTries > 0) {
+                    return new Promise((resolve) => setTimeout(resolve, 200))
+                        .then(() => waitForButton(remainingTries--));
+
+                } else if ($button.length === 0) {
+                    return Promise.reject(new Error("Button (tag: " + tag + ") with text '" + text + "' not found"));
+                }
+                return Promise.resolve();
+            }
+
+            return waitForButton(30);
+        }, text, tag);
+
+
         this.createLogger("BaseAribaPageImpl").debug(`Click on first button (tag: ${tag}) with text ${text}`);
         await page.evaluate((text, tag) => {
             const $button = jQuery(tag + ":contains('" + text + "'):first");
