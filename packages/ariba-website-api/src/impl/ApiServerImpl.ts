@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import type * as http from "http";
-import type { ParsedQs } from "qs";
 import type { Logger } from "winston";
 import type * as Transport from "winston-transport";
 

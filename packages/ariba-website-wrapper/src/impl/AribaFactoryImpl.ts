@@ -130,7 +130,7 @@ export class AribaFactoryImpl implements IAribaFactory {
                 // add a script to enable jQuery all the time
                 await page.evaluateOnNewDocument(() => {
                     if (window.ariba) {
-                        ((window.ariba as any).Event || {}).handleMouseEvent =
+                        (window.ariba.Event || {}).handleMouseEvent =
                         function () { return true; };
                     }
 

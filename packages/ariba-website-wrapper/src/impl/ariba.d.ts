@@ -9,6 +9,9 @@ declare global {
                     dropDownMenuAction: (node: jQuery, ...args: unknown[]) => void;
                 }
             },
+            Event: {
+                handleMouseEvent: (event?: MouseEvent) => void,
+            },
             Handlers: {
                 fakeClick: (elem: HTMLElement) => void,
             },

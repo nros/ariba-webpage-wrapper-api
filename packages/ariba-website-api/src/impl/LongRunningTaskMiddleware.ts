@@ -3,7 +3,7 @@ import type { ParamsDictionary, Request, Response } from "express-serve-static-c
 import type { ParsedQs } from "qs";
 import type { IMiddleware } from "../IMiddleware.js";
 import type { IApiServer } from "../IApiServer.js";
-import type { HttpError, HttpResponseErrorMessage } from "../IApiServer.js";
+import type { HttpError } from "../IApiServer.js";
 import type {
     ILongRunningTaskManager,
     ITaskManagerTaskControl,
