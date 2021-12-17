@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import { constants } from "http2";
 import { setTaskManagerToRequest } from "../ILongRunningTaskManager.js";
 import { TaskControlImpl } from "./TaskControlImpl.js";
+import { sendResponseError } from "./http-utils.js";
 
 const KEEP_TIME_OF_RESULT_AFTER_FINISH = 1000 * 60 * 10;
 
@@ -240,17 +241,11 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                     .then(() => { this._longRunningTasks[id].isStarted = true; })
                     .then(() => taskControl)
                     .then(task)
-                    .catch((error: HttpError) =>
-                        (async (response) => {
-                            (await response)
-                                .status(error.status || constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-                                .json({
-                                    error: error.status || constants.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                                    message: error.message,
-                                } as HttpResponseErrorMessage)
-                            ;
-                        }) as TLongRunningTaskResultGenerator,
-                    )
+                    .catch((error: HttpError) => {
+                        return (async (response) => {
+                            sendResponseError(await response)(error);
+                        }) as TLongRunningTaskResultGenerator;
+                    })
                     .then((responseGenerator) => {
                         taskAsEnded(responseGenerator);
                     })
