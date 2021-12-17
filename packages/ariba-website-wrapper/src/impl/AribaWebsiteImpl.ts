@@ -59,6 +59,8 @@ export class AribaWebsiteImpl implements IAribaWebsite {
     }
 
     public async close(): Promise<void> {
+        this._logger.error("CLOSING Ariba", new Error("Closing Ariba session!"));
+
         await this.stopSession();
         if (this._myFactory) {
             await this._myFactory.close();

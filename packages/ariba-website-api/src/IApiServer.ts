@@ -1,4 +1,5 @@
 import type { IMiddlewareNeedsTimer } from "./IMiddlewareNeedsTimer.js";
+import type express from "express";
 
 export interface HttpError extends Error { status: number }
 
@@ -18,4 +19,6 @@ export interface IApiServer {
 
     registerTimerEvent(middleware: IMiddlewareNeedsTimer, interval: number) : void;
     registerCloseCleanup(callback: () => void) : void;
+
+    logRequest(request: express.Request): void;
 }

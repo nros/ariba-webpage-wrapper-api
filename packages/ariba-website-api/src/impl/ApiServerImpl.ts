@@ -1,6 +1,9 @@
 /// <reference types="node" />
 import type * as http from "http";
 import type { ParsedQs } from "qs";
+import type { Logger } from "winston";
+import type * as Transport from "winston-transport";
+
 import type { IAribaWebsite, IAribaWebsiteApi } from "ariba-website-wrapper";
 import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl.js";
 import type { RequestWithAribaWebsite } from "./AribaApiMiddleware.js";
@@ -15,6 +18,7 @@ import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 import express from "express";
 import bodyParser from "body-parser";
 import nocache from "nocache";
+import winston from "winston";
 
 import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl.js";
 import { ConfigMiddleware } from "./ConfigMiddleware.js";
@@ -29,12 +33,38 @@ export class ApiServerImpl implements IApiServer {
     private _server?: http.Server;
     private _app?: express.Express;
     private _configMiddleware: ConfigMiddleware;
+    private _logger: Logger;
     private _timers: ReturnType<typeof setInterval>[] = [];
     private _timersAtStart: Array<() => void> = [];
     private _cleanUpOnClose: Array<() => void> = [];
 
     public constructor(configFile?: string) {
         this._configMiddleware = new ConfigMiddleware(configFile);
+
+        const myFormat = winston.format.printf(({ level, message, timestamp, loggerName, ...metadata }) => {
+            let msg = `${timestamp} [${level}] ${loggerName}: ${message} `;
+
+            if (metadata) {
+                const metadataMessage = JSON.stringify(metadata, undefined, 4);
+                if (metadataMessage.trim() !== "{}") {
+                    msg += " " + metadataMessage;
+                }
+            }
+            return msg;
+        });
+
+        this._logger = winston.createLogger({
+            level: "debug",
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.splat(),
+                winston.format.timestamp(),
+                myFormat,
+            ),
+            transports: [
+                new winston.transports.Console({ level: "debug" }) as Transport,
+            ],
+        });
     }
 
     public get isStarted(): boolean {
@@ -62,7 +92,8 @@ export class ApiServerImpl implements IApiServer {
         app = await this.registerApiHandlers(app);
 
         expressAppServer.use("/api", app);
-        expressAppServer.use("/", function (request, response) {
+        expressAppServer.use("/", (request, response) => {
+            this.logRequest(request);
             response.sendStatus(404);
         });
 
@@ -118,8 +149,24 @@ export class ApiServerImpl implements IApiServer {
         }
     }
 
+
+    public logRequest(request: express.Request): void {
+        this._logger.debug(JSON.stringify({
+            request: {
+                method: request.method,
+                hostname: request.hostname,
+                path: request.path,
+                params: JSON.parse(JSON.stringify(request.params)),
+                user: (request as RequestWithAuthentication).auth?.user,
+                aribaUser: (request as RequestWithAuthentication).auth?.aribaUsername,
+            },
+        }, undefined, 4));
+    }
+
+
     protected async registerApiHandlers(app: express.Express): Promise<express.Express> {
         app.get("/whoami", (request, response) => {
+            this.logRequest(request);
             response.status(200).json({
                 user: (request as RequestWithAuthentication).auth.user,
                 hasAribaUser: !!(request as RequestWithAuthentication).auth.aribaUsername,
@@ -176,6 +223,7 @@ export class ApiServerImpl implements IApiServer {
     ): express.RequestHandler {
 
         return (request, response, next) => {
+            this.logRequest(request);
             const ariba = this.extractAribeWebsiteFromRequest(request);
 
             if (!ariba) {

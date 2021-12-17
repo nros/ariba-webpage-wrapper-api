@@ -22,6 +22,7 @@
     "test:unit": ""
   },
   "dependencies": {
+    "@types/winston": "^2.4.4",
     "ariba-website-wrapper": "../ariba-website-wrapper",
     "body-parser": "^1.19.1",
     "config": "^3.3.6",
@@ -29,7 +30,8 @@
     "express-basic-auth": "^1.2.0",
     "nocache": "^3.0.1",
     "p-queue": "^7.1.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@types/config": "^0.0.40",

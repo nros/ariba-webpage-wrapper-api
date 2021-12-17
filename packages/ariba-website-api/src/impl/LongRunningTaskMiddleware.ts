@@ -66,6 +66,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
         });
 
         app.get("/tasks/:id/status", (request, response) => {
+            apiServer.logRequest(request);
             const id = request.params.id;
 
             if (this._longRunningTasks[id]) {
@@ -94,6 +95,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
         });
 
         app.get("/tasks/:id", (request, response) => {
+            apiServer.logRequest(request);
             const id = request.params.id;
 
             if (this._longRunningTasks[id]) {
@@ -118,6 +120,8 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
             const id = request.params.id;
 
             if (this._longRunningTasks[id]) {
+                this._longRunningTasks[id].control.isCancelled = true;
+
                 response
                     .status(constants.HTTP_STATUS_OK)
                     .json({
