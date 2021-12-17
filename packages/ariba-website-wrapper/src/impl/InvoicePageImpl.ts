@@ -98,7 +98,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
 
         // if there is no invoice, then return the initial value
         const isEmpty = await page.evaluate(() =>
-            window.jQuery("h2:contains('Invoices (0)')").length > 0,
+            window.jQuery("h2:contains('Invoices (0)')").length === 0,
         );
 
         if (isEmpty) {
