@@ -94,7 +94,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                 ;
 
             } else {
-                response.status(constants.HTTP_STATUS_NOT_FOUND);
+                response.sendStatus(constants.HTTP_STATUS_NOT_FOUND);
             }
         });
 
@@ -116,7 +116,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
                 this._operationResults[id].httpResultGenerator(Promise.resolve(response));
 
             } else {
-                response.status(constants.HTTP_STATUS_NOT_FOUND);
+                response.sendStatus(constants.HTTP_STATUS_NOT_FOUND);
             }
         });
 
