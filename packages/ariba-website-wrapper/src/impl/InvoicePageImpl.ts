@@ -80,7 +80,8 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         ]);
 
         this._logger.debug("Waiting for the 'Purchase Order Search Page' to become available");
-        await page.waitForXPath("//td.pageHeadingText[contains(text(), 'Invoices')]");
+        await page.waitForXPath("//td[@class='pageHeadingText'][contains(text(), 'Invoices')]");
+
         return page;
     }
 
