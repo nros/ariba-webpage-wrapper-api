@@ -71,7 +71,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
 
             if (this._longRunningTasks[id]) {
                 response
-                    .status(constants.HTTP_STATUS_ACCEPTED)
+                    .status(constants.HTTP_STATUS_OK)
                     .json({
                         status: this._longRunningTasks[id].isStarted ? "RUNNING" : "WAITING",
                         message: `Task is ${this._longRunningTasks[id].isStarted ? "running" : "waiting"}`,
@@ -81,7 +81,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
 
             } else if (this._operationResults[id]) {
                 response
-                    .status(constants.HTTP_STATUS_ACCEPTED)
+                    .status(constants.HTTP_STATUS_OK)
                     .json({
                         status: "FINISHED",
                         message: "Task has finished",
