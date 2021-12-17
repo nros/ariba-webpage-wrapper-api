@@ -13,8 +13,8 @@
   "scripts": {
     "build": "npm run lint && npm run build:lib",
     "build:lib": "node ../../build-tools/tsc.js",
-    "lint": "",
-    "lint:fix": "",
+    "lint": "node ../../node_modules/.bin/eslint src --ext .ts",
+    "lint:fix": "node ../../node_modules/.bin/eslint src --ext .ts --fix",
     "start:dev": "node ../../node_modules/.bin/ts-node --project tsconfig.node.json src/index.ts",
     "test": "",
     "test:unit": ""
