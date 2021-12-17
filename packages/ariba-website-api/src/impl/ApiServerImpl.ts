@@ -84,6 +84,7 @@ export class ApiServerImpl implements IApiServer {
 
         app.use(nocache());
         app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(bodyParser.json());
 
         app = await new AuthenticatorJsonImpl().registerMiddleware(app, this);
         app = await this._configMiddleware.registerMiddleware(app, this);
