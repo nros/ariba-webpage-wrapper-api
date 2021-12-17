@@ -9,7 +9,6 @@ import type {
     ITaskManagerTaskControl,
     Task,
     TLongRunningTaskResultGenerator,
-    TRequestWithTaskManager,
 } from "../ILongRunningTaskManager.js";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
@@ -20,6 +19,7 @@ import nocache from "nocache";
 import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl.js";
 import { ConfigMiddleware } from "./ConfigMiddleware.js";
 import { AribaApiMiddleware } from "./AribaApiMiddleware.js";
+import { getTaskManagerFromRequest } from "../ILongRunningTaskManager.js";
 import { LongRunningTaskMiddleware } from "./LongRunningTaskMiddleware.js";
 import { sendResponseJson, sendResponseError } from "./http-utils.js";
 
@@ -182,7 +182,7 @@ export class ApiServerImpl implements IApiServer {
                 sendResponseError(response)("No Ariba website wrapper has been initialised!");
 
             } else {
-                const taskManager = (request as TRequestWithTaskManager).taskManager;
+                const taskManager = getTaskManagerFromRequest(request);
 
                 if (isLongRunning && taskManager) {
                     const command: Task = (taskControl) => {

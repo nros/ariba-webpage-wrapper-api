@@ -8,13 +8,13 @@ import type {
     ILongRunningTaskManager,
     ITaskManagerTaskControl,
     Task,
-    TRequestWithTaskManager,
     TLongRunningTaskResultGenerator,
 } from "../ILongRunningTaskManager.js";
 
 import PQueue from "p-queue";
 import { v4 as uuidv4 } from "uuid";
 import { constants } from "http2";
+import { setTaskManagerToRequest } from "../ILongRunningTaskManager.js";
 
 const KEEP_TIME_OF_RESULT_AFTER_FINISH = 1000 * 60 * 10;
 
@@ -60,8 +60,9 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
 
     public async registerMiddleware(app: express.Express, apiServer: IApiServer): Promise<express.Express> {
         // add this to the request
-        app.use((request) => {
-            (request as TRequestWithTaskManager).taskManager = this;
+        app.use((request, response, next) => {
+            setTaskManagerToRequest(request, this);
+            next();
         });
 
         app.get("/tasks/:id/status", (request, response) => {

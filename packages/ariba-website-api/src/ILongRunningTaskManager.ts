@@ -68,6 +68,18 @@ export interface ILongRunningTaskManager {
 }
 
 
-export type TRequestWithTaskManager = express.Request & {
-    taskManager?: ILongRunningTaskManager;
+type TRequestWithTaskManager = express.Request & {
+    _customLongRunningTaskManager?: ILongRunningTaskManager;
 };
+
+export function getTaskManagerFromRequest(request: express.Request): ILongRunningTaskManager | undefined {
+    return (request as TRequestWithTaskManager)._customLongRunningTaskManager;
+}
+
+export function setTaskManagerToRequest(
+    request: express.Request,
+    taskManager: ILongRunningTaskManager,
+): ILongRunningTaskManager {
+    (request as TRequestWithTaskManager)._customLongRunningTaskManager = taskManager;
+    return taskManager;
+}
