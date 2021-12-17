@@ -15,6 +15,7 @@ import PQueue from "p-queue";
 import { v4 as uuidv4 } from "uuid";
 import { constants } from "http2";
 import { setTaskManagerToRequest } from "../ILongRunningTaskManager.js";
+import { TaskControlImpl } from "./TaskControlImpl.js";
 
 const KEEP_TIME_OF_RESULT_AFTER_FINISH = 1000 * 60 * 10;
 
@@ -282,40 +283,7 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
     }
 
     private createTaskControl(): ITaskManagerTaskControl {
-        let _progressMessage: string | undefined = "";
-        let _progress = 0;
-
-        return {
-            get progress(): number {
-                return _progress;
-            },
-            set progress(progress: number) {
-                _progress = progress;
-            },
-
-            get progressMessage(): (string | undefined) {
-                return _progressMessage;
-            },
-            set progressMessage(message: (string | undefined)) {
-                _progressMessage = message;
-            },
-
-            isCancelled: false,
-
-            createCancelError(message?: string): HttpError {
-                const error = new Error(message || "Task cancelled") as HttpError;
-                error.status = constants.HTTP_STATUS_SERVICE_UNAVAILABLE;
-                return error;
-            },
-
-            checkAndPass<T>(data: T): Promise<T> {
-                if (this.isCancelled) {
-                    return Promise.reject(this.createCancelError());
-                } else {
-                    return Promise.resolve(data);
-                }
-            },
-        };
+        return new TaskControlImpl();
     }
 
 
