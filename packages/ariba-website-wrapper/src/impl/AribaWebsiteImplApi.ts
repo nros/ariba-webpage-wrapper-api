@@ -4,12 +4,16 @@ import type { IAribaFactory } from "../IAribaFactory.js";
 import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
 import type { IPurchaseOrder } from "../IPurchaseOrder.js";
 
+import PQueue from "p-queue";
 import { TPurchaseOrderState, status2String } from "../IPurchaseOrder.js";
 
 
 export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     private readonly _factory: IAribaFactory;
     private readonly _logger: Logger;
+
+    // Ariba website is awfull and can just operate on a single page at once!
+    private _operationQueue = new PQueue({ concurrency: 1 });
 
     public constructor(factory: IAribaFactory) {
         this._factory = factory;
@@ -54,18 +58,21 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             }
         }
 
-        this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
-        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        try {
-            return await purchaseOrderPage.confirmPurchaseOrder(
-                purchaseOrderId,
-                new Date(estimatedDeliveryDate),
-                estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
-                supplierOrderId,
-            );
-        } finally {
-            await purchaseOrderPage.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
+
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            try {
+                return await purchaseOrderPage.confirmPurchaseOrder(
+                    purchaseOrderId,
+                    new Date(estimatedDeliveryDate),
+                    estimatedShippingDate ? new Date(estimatedShippingDate) : undefined,
+                    supplierOrderId,
+                );
+            } finally {
+                await purchaseOrderPage.close();
+            }
+        });
     }
 
     public async createShippingNotice(
@@ -117,21 +124,23 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             }
         }
 
-        this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
-        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        try {
-            return await purchaseOrderPage.createShippingNotice(
-                purchaseOrderId,
-                packingSlipId,
-                carrierName,
-                trackingNumber || "unknown",
-                trackingUrl,
-                new Date(estimatedDeliveryDate),
-                shippingDate ? new Date(shippingDate) : undefined,
-            );
-        } finally {
-            await purchaseOrderPage.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            try {
+                return await purchaseOrderPage.createShippingNotice(
+                    purchaseOrderId,
+                    packingSlipId,
+                    carrierName,
+                    trackingNumber || "unknown",
+                    trackingUrl,
+                    new Date(estimatedDeliveryDate),
+                    shippingDate ? new Date(shippingDate) : undefined,
+                );
+            } finally {
+                await purchaseOrderPage.close();
+            }
+        });
     }
 
     public async createInvoice(
@@ -150,17 +159,19 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             throw new Error("Invalid purchase order ID!");
         }
 
-        this._logger.info(`Create invoice for purchase order with ID ${purchaseOrderId}.`);
-        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        try {
-            return await purchaseOrderPage.createInvoice(
-                purchaseOrderId,
-                logisticsOrderId,
-                invoiceNumber,
-            );
-        } finally {
-            await purchaseOrderPage.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Create invoice for purchase order with ID ${purchaseOrderId}.`);
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            try {
+                return await purchaseOrderPage.createInvoice(
+                    purchaseOrderId,
+                    logisticsOrderId,
+                    invoiceNumber || "",
+                );
+            } finally {
+                await purchaseOrderPage.close();
+            }
+        });
     }
 
     public async getPurchaseOrders(filterForState?: TPurchaseOrderState): Promise<IPurchaseOrder[]> {
@@ -174,36 +185,53 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     }
 
     public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<{id: string, state: string}> {
-        this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
-        const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
-        try {
-            return {
-                id: purchaseOrderId,
-                state: await purchaseOrderPage.getOrderStatus(purchaseOrderId)
-                    .then(status2String),
-            };
-        } finally {
-            await purchaseOrderPage.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            try {
+                return {
+                    id: purchaseOrderId,
+                    state: await purchaseOrderPage.getOrderStatus(purchaseOrderId)
+                        .then(status2String),
+                };
+            } finally {
+                await purchaseOrderPage.close();
+            }
+        });
     }
 
     public async getLastInvoiceNumber(): Promise<string> {
-        this._logger.info(`Getting last invoice number.`);
-        const page = await this._factory.createInvoicePage();
-        try {
-            return await page.getLatestInvoiceNumber();
-        } finally {
-            await page.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Getting last invoice number.`);
+            const page = await this._factory.createInvoicePage();
+            try {
+                return await page.getLatestInvoiceNumber();
+            } finally {
+                await page.close();
+            }
+        });
     }
 
     public async getNextInvoiceNumber(): Promise<string> {
-        this._logger.info(`Getting last invoice number.`);
-        const page = await this._factory.createInvoicePage();
-        try {
-            return await page.getNextInvoiceNumber();
-        } finally {
-            await page.close();
-        }
+        return await this.addOperationAndWait(async () => {
+            this._logger.info(`Getting last invoice number.`);
+            const page = await this._factory.createInvoicePage();
+            try {
+                return await page.getNextInvoiceNumber();
+            } finally {
+                await page.close();
+            }
+        });
+    }
+
+    private addOperationAndWait<T>(task: () => Promise<T>): Promise<T> {
+        // wait for the task to finish and return its result
+        return new Promise((resolve: (data: T) => void, reject:(error: Error) => void) => {
+            this._operationQueue.add(() => task()
+                .then(resolve, reject)
+                .catch()
+                .then(),
+            );
+        });
     }
 }
