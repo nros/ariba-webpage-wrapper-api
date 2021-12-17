@@ -116,7 +116,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                 purchaseOrderId,
                 packingSlipId,
                 carrierName,
-                trackingNumber,
+                trackingNumber || "unknown",
                 trackingUrl,
                 new Date(estimatedDeliveryDate),
                 shippingDate ? new Date(shippingDate) : undefined,
