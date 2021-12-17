@@ -206,7 +206,9 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
             const taskId: string = waitForTaskId;
             return (taskControl) =>
                 (this._longRunningTasks[taskId]?.waitingForTask || Promise.resolve())
-                    .then(() => newTask(taskControl))
+                    .then(() =>
+                        newTask(taskControl),
+                    )
             ;
         } else {
             return newTask;
@@ -222,8 +224,15 @@ export class LongRunningTaskMiddleware implements IMiddleware, ILongRunningTaskM
         request: Request<P, ResBody, ReqBody, ReqQuery, Locals>,
     ): (string | undefined) {
         let waitForTaskId: string | undefined;
-        if ((request.params as unknown as ParamsDictionary).afterRunningTask) {
-            waitForTaskId = (request.params as unknown as ParamsDictionary).afterRunningTask;
+
+        const allParams = {
+            ...request.query,
+            ...request.body,
+            ...(request.params as unknown as ParamsDictionary),
+        };
+
+        if (allParams.afterRunningTask) {
+            waitForTaskId = allParams.afterRunningTask;
         }
 
         if (waitForTaskId && this._longRunningTasks[waitForTaskId] !== undefined) {
