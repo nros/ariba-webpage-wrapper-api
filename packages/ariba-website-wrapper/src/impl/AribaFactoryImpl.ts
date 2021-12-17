@@ -106,6 +106,10 @@ export class AribaFactoryImpl implements IAribaFactory {
                     return Promise.reject<Page>(new Error("Failed to create a new page!"));
                 }
 
+                // setting a specific user agent to speed up headless mode
+                // see: https://github.com/puppeteer/puppeteer/issues/1718
+                await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36')
+
                 await page.setViewport(this.getViewportSize(this._config));
 
                 // --- set language to English
