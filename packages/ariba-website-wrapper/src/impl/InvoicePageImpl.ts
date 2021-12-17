@@ -17,9 +17,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
             .catch(() => undefined) // ignore and try again
             .then((number) => {
                 if (!number) {
-                    this._cachedLastInvoiceNumber = this.currentPage
-                        .then((page) => this.readLatestInvoiceNumberFromPage(page))
-                    ;
+                    this._cachedLastInvoiceNumber = this.readLatestInvoiceNumberFromPage(this.page);
                     return this._cachedLastInvoiceNumber;
                 }
                 return number;

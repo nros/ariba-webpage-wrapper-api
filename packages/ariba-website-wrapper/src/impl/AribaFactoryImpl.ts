@@ -3,7 +3,7 @@ import type * as Transport from "winston-transport";
 
 import type { IAribaConfiguration } from "../IAribaConfiguration.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
-import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
+import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
 import type { IInvoicePage } from "../IInvoicePage.js";
 import type { ILoginPage } from "../ILoginPage.js";
 import type { IPageFormHelper } from "../IPageFormHelper.js";
@@ -30,7 +30,6 @@ export class AribaFactoryImpl implements IAribaFactory {
 
     private _browser?: Browser;
     private _logger: winston.Logger;
-    private _website?: IAribaWebsiteApi;
     private _pageHelper?: IPageHelpers;
     private _pageFormHelper?: IPageFormHelper;
 
@@ -85,17 +84,16 @@ export class AribaFactoryImpl implements IAribaFactory {
                 args: ["--lang=en-US,en"],
                 // slowMo: 25, // for debugging purpose
             });
+
+            // close all pages created by default
+            (await this._browser.pages()).forEach((page) => page.close());
         }
 
         return this._browser;
     }
 
-    public async createAribaWebsiteApi(): Promise<IAribaWebsiteApi> {
-        if (!this._website) {
-            this._website = new AribaWebsiteImplApi(this);
-        }
-
-        return this._website;
+    public async createAribaWebsiteApi(page: Page): Promise<IAribaWebsiteApiWithLogin> {
+        return new AribaWebsiteImplApi(this, page);
     }
 
     public createNewPage(): Promise<Page> {
@@ -213,16 +211,16 @@ export class AribaFactoryImpl implements IAribaFactory {
         return this._logger.child({ loggerName });
     }
 
-    public async createPurchaseOrderPage(): Promise<IPurchaseOrderPage> {
-        return new PurchaseOrderPageImpl(this);
+    public async createPurchaseOrderPage(page: Page): Promise<IPurchaseOrderPage> {
+        return new PurchaseOrderPageImpl(this, page);
     }
 
-    public async createLoginPage(): Promise<ILoginPage> {
-        return new LoginPageImpl(this);
+    public async createLoginPage(page: Page): Promise<ILoginPage> {
+        return new LoginPageImpl(this, page);
     }
 
-    public async createInvoicePage(): Promise<IInvoicePage> {
-        return new InvoicePageImpl(this);
+    public async createInvoicePage(page: Page): Promise<IInvoicePage> {
+        return new InvoicePageImpl(this, page);
     }
 
     private getViewportSize(config?: IAribaConfiguration): { width: number, height: number } {

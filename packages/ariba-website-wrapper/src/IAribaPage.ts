@@ -8,7 +8,7 @@ export interface IAribaPage {
     /**
      * The browser page this page wrapper operates on.
      */
-    readonly currentPage: Promise<Page>;
+    readonly page: Page;
 
     /**
      * The configuration of the ariba wrapper
@@ -19,11 +19,6 @@ export interface IAribaPage {
      * Go to the main start page of the website, using the current browser page.
      */
     navigateToHome(): Promise<IAribaPage>
-
-    /**
-     * Close the current browser page and release its resources.
-     */
-    close(): Promise<IAribaPage>
 
     /**
      * Returns the class name of the sub class, which is used for logging purposes.

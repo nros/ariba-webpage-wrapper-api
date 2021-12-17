@@ -1,23 +1,41 @@
+import type { Page } from "puppeteer";
 import type { Logger } from "winston";
 
+import type { IAribaDialogPage } from "../IAribaDialogPage.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
-import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
+import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
 import type { IPurchaseOrder } from "../IPurchaseOrder.js";
 
 import PQueue from "p-queue";
 import { TPurchaseOrderState, status2String } from "../IPurchaseOrder.js";
+import { LOGIN_REFRESH_TIMEOUT } from "../ILogin.js";
 
 
-export class AribaWebsiteImplApi implements IAribaWebsiteApi {
+function isDialogPage(page: unknown): page is IAribaDialogPage {
+    return !!page && (typeof (page as IAribaDialogPage).closeDialog === "function");
+}
+
+
+export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
     private readonly _factory: IAribaFactory;
     private readonly _logger: Logger;
 
     // Ariba website is awfull and can just operate on a single page at once!
-    private _operationQueue = new PQueue({ concurrency: 1 });
+    private readonly _operationQueue = new PQueue({ concurrency: 1 });
+    private readonly _page: Page;
+    private _nextTaskOrderNumber = 1;
 
-    public constructor(factory: IAribaFactory) {
+    private _lastLogin: Date = new Date(2);
+    private _refreshLoginTimer?: ReturnType<typeof setTimeout>;
+
+    public constructor(factory: IAribaFactory, page: Page) {
         this._factory = factory;
         this._logger = factory.createLogger("AribaWebsiteImplApi");
+        this._page = page;
+    }
+
+    public get page(): Page {
+        return this._page;
     }
 
     public async confirmPurchaseOrder(
@@ -58,10 +76,10 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             }
         }
 
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("confirmPurchaseOrder", async () => {
             this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
 
-            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
             try {
                 return await purchaseOrderPage.confirmPurchaseOrder(
                     purchaseOrderId,
@@ -70,7 +88,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                     supplierOrderId,
                 );
             } finally {
-                await purchaseOrderPage.close();
+                if (isDialogPage(purchaseOrderPage)) {
+                    await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
             }
         });
     }
@@ -124,9 +144,10 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             }
         }
 
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("createShippingNotice", async () => {
             this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
-            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
+
             try {
                 return await purchaseOrderPage.createShippingNotice(
                     purchaseOrderId,
@@ -138,7 +159,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                     shippingDate ? new Date(shippingDate) : undefined,
                 );
             } finally {
-                await purchaseOrderPage.close();
+                if (isDialogPage(purchaseOrderPage)) {
+                    await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
             }
         });
     }
@@ -159,9 +182,10 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
             throw new Error("Invalid purchase order ID!");
         }
 
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("createInvoice", async () => {
             this._logger.info(`Create invoice for purchase order with ID ${purchaseOrderId}.`);
-            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
+
             try {
                 return await purchaseOrderPage.createInvoice(
                     purchaseOrderId,
@@ -169,7 +193,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                     invoiceNumber || "",
                 );
             } finally {
-                await purchaseOrderPage.close();
+                if (isDialogPage(purchaseOrderPage)) {
+                    await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
             }
         });
     }
@@ -185,9 +211,10 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
     }
 
     public async getPurchaseOrderStatus(purchaseOrderId: string): Promise<{id: string, state: string}> {
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("getPurchaseOrderStatus", async () => {
             this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
-            const purchaseOrderPage = await this._factory.createPurchaseOrderPage();
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
+
             try {
                 return {
                     id: purchaseOrderId,
@@ -195,43 +222,113 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApi {
                         .then(status2String),
                 };
             } finally {
-                await purchaseOrderPage.close();
+                if (isDialogPage(purchaseOrderPage)) {
+                    await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
             }
         });
     }
 
     public async getLastInvoiceNumber(): Promise<string> {
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("getLastInvoiceNumber", async () => {
             this._logger.info(`Getting last invoice number.`);
-            const page = await this._factory.createInvoicePage();
+            const page = await this._factory.createInvoicePage(this.page);
+
             try {
                 return await page.getLatestInvoiceNumber();
             } finally {
-                await page.close();
+                if (isDialogPage(page)) {
+                    await page.closeDialog(page.page);
+                }
             }
         });
     }
 
     public async getNextInvoiceNumber(): Promise<string> {
-        return await this.addOperationAndWait(async () => {
+        return await this.addOperationAndWait("getNextInvoiceNumber", async () => {
             this._logger.info(`Getting last invoice number.`);
-            const page = await this._factory.createInvoicePage();
+            const page = await this._factory.createInvoicePage(this.page);
+
             try {
                 return await page.getNextInvoiceNumber();
             } finally {
-                await page.close();
+                if (isDialogPage(page)) {
+                    await page.closeDialog(page.page);
+                }
             }
         });
     }
 
-    private addOperationAndWait<T>(task: () => Promise<T>): Promise<T> {
+    public async login(): Promise<void> {
+        await this.addRefreshLoginSessionOperation();
+    }
+
+    private async doLogin(): Promise<void> {
+        this._logger.info("Logging into Ariba.");
+        const loginPage = await this._factory.createLoginPage(this.page);
+        await loginPage.login();
+        this._lastLogin = new Date();
+    }
+
+    private async checkLoginSession(): Promise<number> {
+        if (Date.now() - this._lastLogin.getTime() >= LOGIN_REFRESH_TIMEOUT) {
+            await this.refreshLoginSession();
+        }
+
+        const nextRefresh = LOGIN_REFRESH_TIMEOUT - (Date.now() - this._lastLogin.getTime());
+        this._logger.debug(`Session is still fresh. Next refresh is due at ${new Date(Date.now() + nextRefresh)}`);
+        return nextRefresh;
+    }
+
+    private async refreshLoginSession(): Promise<void> {
+        this._logger.info(`================= Executing next task 'LOGIN' ======================`);
+        await this.doLogin();
+        this._lastLogin = new Date();
+    }
+
+    private async addRefreshLoginSessionOperation(): Promise<void> {
+        if (this._refreshLoginTimer) {
+            clearTimeout(this._refreshLoginTimer);
+            this._refreshLoginTimer = undefined;
+        }
+
+        await this._operationQueue.add(async () => {
+            // set timer first
+            let nextRefresh = LOGIN_REFRESH_TIMEOUT;
+            try {
+                nextRefresh = await this.checkLoginSession();
+            } catch (error) {
+                this._logger.error(`Failed to refresh login! ${error}`, { error });
+            }
+
+            this._logger.debug(`Next session refresh at ${new Date(Date.now() + nextRefresh)}`);
+            this._refreshLoginTimer = setTimeout(this.addRefreshLoginSessionOperation.bind(this), nextRefresh);
+        });
+    }
+
+    private addOperationAndWait<T>(taskName: string, task: () => Promise<T>): Promise<T> {
+        taskName += `(${++this._nextTaskOrderNumber})`;
+
         // wait for the task to finish and return its result
         return new Promise((resolve: (data: T) => void, reject:(error: Error) => void) => {
-            this._operationQueue.add(() => task()
-                .then(resolve, reject)
-                .catch()
-                .then(),
-            );
+            this._operationQueue.add(async () => {
+                await this.checkLoginSession();
+
+                this._logger.info(`================= Executing next task '${taskName}' ======================`);
+                return task()
+                    .then(
+                        (data) => {
+                            this._logger.debug(`----------------- ENDING task '${taskName}' -----------------`);
+                            resolve(data);
+                        },
+                        (error) => {
+                            this._logger.error(`!!!!!!!!!!! ERROR task '${taskName}' !!!!!!!!!!!!!!!!`, { error });
+                            reject(error);
+                        },
+                    )
+                    .catch()
+                    .then();
+            });
         });
     }
 }

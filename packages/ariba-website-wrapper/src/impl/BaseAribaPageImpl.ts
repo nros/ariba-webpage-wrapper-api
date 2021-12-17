@@ -10,26 +10,25 @@ import type { IPageHelpers } from "../IPageHelpers.js";
  * The base interface for all wrappers of Ariba website pages.
  */
 export abstract class BaseAribaPageImpl implements IAribaPage {
-    private _currentPage?: Page;
-    private _myLogger: Logger;
-    private _myFactory: IAribaFactory;
+    private readonly _currentPage: Page;
+    private readonly _myLogger: Logger;
+    private readonly _myFactory: IAribaFactory;
 
-    public constructor(factory: IAribaFactory, page?: Page) {
+    public constructor(factory: IAribaFactory, page: Page) {
         this._myFactory = factory;
         this._currentPage = page;
         this._myLogger = factory.createLogger(this.loggerName);
+
+        if (!factory) {
+            throw new Error("No factory has been provided!");
+        }
+        if (!page) {
+            throw new Error("No page has been provided!");
+        }
     }
 
-    public get currentPage(): Promise<Page> {
-        if (!this._currentPage) {
-            return this._factory.createNewPage()
-                .then((newPage) => {
-                    this._currentPage = newPage;
-                    return newPage;
-                });
-        } else {
-            return Promise.resolve(this._currentPage);
-        }
+    public get page(): Page {
+        return this._currentPage;
     }
 
     public get config(): IAribaConfiguration {
@@ -45,15 +44,23 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
     }
 
     public async navigateToHome(): Promise<IAribaPage> {
-        this._logger.info("Navigating to dashboard");
-        const page = await this.currentPage;
+        const logger = this._factory.createLogger("BaseAribaPageImpl");
+
+        logger.info("Navigating to dashboard");
+        const page = await this.page;
 
         // reset to blank page to force a reload of the home page
-        this._logger.debug("Opening blank page about:blank to clean current URL!");
-        await page.goto("about:blank");
-        await page.waitForNetworkIdle();
+        if (page.url() !== "about:blank") {
+            logger.debug("Opening blank page about:blank to clean current URL!");
+            try {
+                await page.goto("about:blank");
+                await page.waitForNetworkIdle({ timeout: 500 });
+            } catch (error) {
+                /* ignore this error, it's just the blank page */
+            }
+        }
 
-        this._logger.debug("Opening overview page URL.");
+        logger.debug("Opening overview page URL.");
         await page.goto(this.config.overviewPageUrl);
 
         // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
@@ -63,15 +70,6 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         await page.waitForSelector("div.dashboard-container")
             .catch((error) => Promise.reject(new Error("Session has expired! Please login again! " + error)))
         ;
-
-        return this;
-    }
-
-    public async close(): Promise<IAribaPage> {
-        if (this._currentPage) {
-            await this._currentPage.close();
-            this._currentPage = undefined;
-        }
 
         return this;
     }
@@ -90,19 +88,6 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
     protected createLogger(name: string): Logger {
         return this._factory.createLogger(name);
-    }
-
-    protected async deleteAllCookies(): Promise<IAribaPage> {
-        this._logger.debug("Cleaning the cookies!");
-
-        const page = await this.currentPage;
-        const cookies = await page.cookies();
-        for (const cookie of cookies) {
-            this._logger.debug("Deleting cookie " + cookie.name);
-            await page.deleteCookie(cookie);
-        }
-
-        return this;
     }
 
     protected async clickButtonWithText(page: Page, text: string, tag?: string): Promise<IAribaPage> {

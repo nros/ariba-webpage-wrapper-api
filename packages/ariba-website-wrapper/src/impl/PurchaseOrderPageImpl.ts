@@ -17,12 +17,12 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
         await this.navigateToPurchaseOrder(purchaseOrderId);
 
-        const page = await this.currentPage;
+        const page = this.page;
 
         this._logger.debug(`Read order status with jQuery`);
         const status = await page.evaluate(() =>
             window.jQuery(".poHeaderStatusStyle").text().replace(/[)(]/g, "").toLowerCase().trim(),
-        );
+        ).catch(() => "");
 
         switch (status) {
         case "new":
@@ -71,7 +71,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             throw Error("Purchase order must be confirmed first to create a shipping notice.");
         }
 
-        const page = await this.currentPage;
+        const page = this.page;
 
         this._logger.info("Wait for the create ship notice button.");
         (await page.waitForXPath("//button/span[contains(text(), 'Create Ship Notice')]"));
@@ -197,7 +197,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             throw Error("Purchase order must be delivered first to create an invoice.");
         }
 
-        const page = await this.currentPage;
+        const page = this.page;
 
         this._logger.info("Wait for the create invoice button.");
         (await page.waitForSelector("button[title*='Create'][title*='invoice']"));
@@ -307,7 +307,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
 
 
-        const page = await this.currentPage;
+        const page = this.page;
 
         // find the button to open the confirm sub menu
         this._logger.info("Wait for the purchase order confirmation button.");
@@ -375,7 +375,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.closeDialog(page);
 
         /*
-        const page = await this.currentPage;
+        const page = this.page;
         await this.openPurchaseOrderSearchPage(page);
 
         // open the tab to confirm purchase orders
@@ -406,7 +406,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
     public async navigateToPurchaseOrder(purchaseOrderId: string): Promise<IPurchaseOrderPage> {
         this._logger.info(`Navigate to purchase order (ID: ${purchaseOrderId}) page.`);
-        const page = await this.currentPage;
+        const page = this.page;
 
         await this.openPurchaseOrderSearchPage(page);
         await this.pageFormHelper.setFilterOpen(page);
@@ -595,24 +595,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 ;
             }, orderId);
         }
-
-        return page;
-    }
-
-    public async openConfirmationSubmenuOnPurchaseOrderDetailPage(page: Page) {
-        // find the button to open the confirm sub menu
-        this._logger.debug("Wait for the purchase order confirmation button.");
-        (await page.waitForSelector("button[title*='Create'][title*='order confirmation']"));
-
-        this._logger.debug(`Activate the submenu of the purchase order confirmation button.`);
-        await page.evaluate(() => window.ariba.Menu.PML.click(
-            jQuery("button[title*='Create'][title*='order confirmation']")
-                // for some reason, more than a single button is available in the page. Only the last one
-                // is visible, but ":visible" does not filter the others.
-                .last()
-                .parents(".w-pulldown-button")
-                .first()[0],
-        ));
 
         return page;
     }

@@ -2,7 +2,7 @@ import type { Browser, Page } from "puppeteer";
 import type { Logger } from "winston";
 
 import type { IAribaConfiguration } from "./IAribaConfiguration.js";
-import type { IAribaWebsiteApi } from "./IAribaWebsiteApi.js";
+import type { IAribaWebsiteApiWithLogin } from "./IAribaWebsiteApiWithLogin.js";
 import type { IInvoicePage } from "./IInvoicePage.js";
 import type { ILoginPage } from "./ILoginPage.js";
 import type { IPageFormHelper } from "./IPageFormHelper.js";
@@ -30,12 +30,12 @@ export interface IAribaFactory {
     /**
      * Create a new Ariba website wrapper that builds an API.
      */
-    createAribaWebsiteApi(): Promise<IAribaWebsiteApi>;
+    createAribaWebsiteApi(page: Page): Promise<IAribaWebsiteApiWithLogin>;
 
     /**
      * Create a new browser page
      */
-    createNewPage(): Promise<Page>;
+    createNewPage(): PromiseLike<Page>;
 
     /**
      * Close the browser instance and free all system resources.
@@ -54,7 +54,7 @@ export interface IAribaFactory {
      */
     createLogger(className: string): Logger;
 
-    createPurchaseOrderPage(): Promise<IPurchaseOrderPage>;
-    createLoginPage(): Promise<ILoginPage>;
-    createInvoicePage(): Promise<IInvoicePage>;
+    createPurchaseOrderPage(page: Page): Promise<IPurchaseOrderPage>;
+    createLoginPage(page: Page): Promise<ILoginPage>;
+    createInvoicePage(page: Page): Promise<IInvoicePage>;
 }

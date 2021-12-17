@@ -4,7 +4,7 @@ import type { IAribaConfiguration } from "../IAribaConfiguration.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
 import type { IAribaWebsite } from "../IAribaWebsite.js";
 import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
-import type { ILoginPage } from "../ILoginPage.js";
+import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
 
 import { AribaFactoryImpl } from "./AribaFactoryImpl.js";
 
@@ -19,7 +19,7 @@ import { AribaFactoryImpl } from "./AribaFactoryImpl.js";
 export class AribaWebsiteImpl implements IAribaWebsite {
     private _myFactory?: IAribaFactory;
     private _myLogger?: Logger;
-    private _loginPage?: ILoginPage;
+    private _api?: IAribaWebsiteApiWithLogin;
 
     public init(config: IAribaConfiguration): IAribaWebsite {
         this._myFactory = new AribaFactoryImpl(config);
@@ -31,28 +31,25 @@ export class AribaWebsiteImpl implements IAribaWebsite {
     }
 
     public async startSession(): Promise<IAribaWebsite> {
-        this._logger.info("Starting login session.");
+        this._logger.info("Starting operations session.");
 
-        if (!this._loginPage) {
-            this._logger.debug("Creating new login session.");
-            this._loginPage = await this._factory.createLoginPage();
+        if (!this._api) {
+            this._logger.debug("Creating session page.");
+            this._api = await this._factory.createAribaWebsiteApi(await this._factory.createNewPage());
         } else {
-            this._logger.debug("A session already exists.");
+            this._logger.debug("An operation page already exists.");
         }
 
-        await this._loginPage.startSession();
+        // login
+        await this._api.login();
         return this;
     }
 
     public async stopSession(): Promise<IAribaWebsite> {
         this._logger.info("Stopping login session if some exists.");
-
-        if (this._loginPage) {
-            await this._loginPage.stopSession();
-
-            this._logger.debug("Closing login page session.");
-            await this._loginPage.close();
-            this._loginPage = undefined;
+        if (this._api) {
+            await this._api.page.close();
+            this._api = undefined;
         }
 
         return this;
@@ -67,8 +64,12 @@ export class AribaWebsiteImpl implements IAribaWebsite {
         }
     }
 
-    public getAribaWebsiteApi(): Promise<IAribaWebsiteApi> {
-        return this._factory.createAribaWebsiteApi();
+    public async getAribaWebsiteApi(): Promise<IAribaWebsiteApi> {
+        if (this._api) {
+            return Promise.resolve(this._api);
+        }
+
+        throw new Error("No session has been started, so no API is available");
     }
 
     protected get _logger(): Logger {

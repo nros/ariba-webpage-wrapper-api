@@ -1,8 +1,6 @@
-import type { Page } from "puppeteer";
 import type { ILoginPage } from "../ILoginPage.js";
 
 import { BaseAribaPageImpl } from "./BaseAribaPageImpl.js";
-import { LOGIN_REFRESH_TIMEOUT } from "../ILoginPage.js";
 
 /***
  * Opens a login page and authenticates. The login page is kept open and refreshed every 5 minutes to keep the
@@ -15,32 +13,9 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
         return "LoginPageImpl";
     }
 
-    public async startSession(): Promise<ILoginPage> {
-        if (!this._refreshTimer) {
-            await this.refreshSession();
-        }
+    public async login(): Promise<void> {
+        const page = this.page;
 
-        return this;
-    }
-
-    public async stopSession(): Promise<ILoginPage> {
-        this._logger.debug("Try to stopping session!");
-
-        if (this._refreshTimer) {
-            this._logger.debug("Stopping session refresh timer!");
-            clearInterval(this._refreshTimer);
-            this._refreshTimer = undefined;
-
-            await this.deleteAllCookies();
-
-            this._logger.debug("Closing login page!");
-            await this.close();
-        }
-
-        return this;
-    }
-
-    public async login(page: Page): Promise<Page> {
         // open the home page and see whether this is successful or a login form appears
         this._logger.debug("Loading start page to check for login form!");
         await page.goto(this.config.overviewPageUrl);
@@ -96,14 +71,5 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
         } else {
             this._logger.debug("User is already logged in");
         }
-
-        return page;
-    }
-
-
-    private async refreshSession(): Promise<void> {
-        this._logger.debug("Refreshing session by re-loading login page!");
-        await this.login(await this.currentPage).catch(console.error);
-        this._refreshTimer = setTimeout(this.refreshSession.bind(this), LOGIN_REFRESH_TIMEOUT);
     }
 }
