@@ -57,7 +57,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         const page = await this.currentPage;
 
         this._logger.info("Wait for the create ship notice button.");
-        (await page.waitForSelector("button[title*='Create'][title*='Ship Notice']"));
+        (await page.waitForXPath("//button/span[contains(text(), 'Create Ship Notice')]"));
 
         // open a notice dialog
         this._logger.debug(`Opening the shipping notice dialog for purchase order with ID ${purchaseOrderId}.`);
