@@ -61,8 +61,10 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         // wait for the submenu to be available and click it
         this._logger.debug("Wait for invoice menu to be available and open its submenu");
         await this.pageHelper.deactivateAribaClickCheck(page);
+        await this.pageHelper.loadJQuery(page);
+
         await page.evaluate(() =>
-            jQuery("#SUPInvoices").find("fd-popover-control:contains('Invoices')")
+            window.jQuery("#SUPInvoices").find("fd-popover-control:contains('Invoices')")
                 .trigger("click"),
         );
 
@@ -90,9 +92,12 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         await this.pageFormHelper.setFilterDateRange(page, false);
         await this.pageFormHelper.pressFilterSearchButton(page);
 
+        // ensure jQuery has been loaded
+        await this.pageHelper.loadJQuery(page);
+
         // if there is no invoice, then return the initial value
         const isEmpty = await page.evaluate(() =>
-            jQuery("h2:contains('Invoices (0)')").length > 0,
+            window.jQuery("h2:contains('Invoices (0)')").length > 0,
         );
 
         if (isEmpty) {

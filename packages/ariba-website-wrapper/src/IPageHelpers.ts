@@ -9,4 +9,9 @@ export interface IPageHelpers {
      * @return a function to be executed in the evaluation context of the browser page
      */
     deactivateAribaClickCheck(page: Page): Promise<Page>;
+
+    /**
+     * Loads JQuery into the Ariba page if it is not available.
+     */
+    loadJQuery(page: Page): Promise<Page>;
 }

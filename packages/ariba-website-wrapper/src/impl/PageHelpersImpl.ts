@@ -18,4 +18,16 @@ export class PageHelpersImpl implements IPageHelpers {
         */
         return page;
     }
+
+    public async loadJQuery(page: Page): Promise<Page> {
+        const isJQueryInstalled = await page.evaluate(() => !!window.jQuery);
+        if (!isJQueryInstalled) {
+            await page.addScriptTag({
+                type: "text/javascript",
+                url: "https://service.ariba.com/an/3569122807/ariba/ui/aribaweb/jquery.js",
+            });
+        }
+
+        return page;
+    }
 }
