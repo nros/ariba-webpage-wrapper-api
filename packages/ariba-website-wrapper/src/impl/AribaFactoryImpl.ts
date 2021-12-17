@@ -1,23 +1,24 @@
 import type { Browser, Page } from "puppeteer";
 import type * as Transport from "winston-transport";
 
-import type { IAribaConfiguration } from "../IAribaConfiguration";
-import type { IAribaFactory } from "../IAribaFactory";
-import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
-import type { IInvoicePage } from "../IInvoicePage";
-import type { ILoginPage } from "../ILoginPage";
-import type { IPageFormHelper } from "../IPageFormHelper";
-import type { IPageHelpers } from "../IPageHelpers";
-import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
+import type { IAribaConfiguration } from "../IAribaConfiguration.js";
+import type { IAribaFactory } from "../IAribaFactory.js";
+import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
+import type { IInvoicePage } from "../IInvoicePage.js";
+import type { ILoginPage } from "../ILoginPage.js";
+import type { IPageFormHelper } from "../IPageFormHelper.js";
+import type { IPageHelpers } from "../IPageHelpers.js";
+import type { IPurchaseOrderPage } from "../IPurchaseOrderPage.js";
 
-import puppeteer from "./puppeteer-with-plugins";
-import { AribaWebsiteImplApi } from "./AribaWebsiteImplApi";
-import { InvoicePageImpl } from "./InvoicePageImpl";
-import { LoginPageImpl } from "./LoginPageImpl";
-import { PageFormHelperImpl } from "./PageFormHelperImpl";
-import { PageHelpersImpl } from "./PageHelpersImpl";
-import { PurchaseOrderPageImpl } from "./PurchaseOrderPageImpl";
-import { createLogger, format, transports, Logger } from "winston";
+import winston from "winston";
+import puppeteer from "./puppeteer-with-plugins.js";
+
+import { AribaWebsiteImplApi } from "./AribaWebsiteImplApi.js";
+import { InvoicePageImpl } from "./InvoicePageImpl.js";
+import { LoginPageImpl } from "./LoginPageImpl.js";
+import { PageFormHelperImpl } from "./PageFormHelperImpl.js";
+import { PageHelpersImpl } from "./PageHelpersImpl.js";
+import { PurchaseOrderPageImpl } from "./PurchaseOrderPageImpl.js";
 
 interface Console {
     [funcName: string]: (...args: unknown[]) => void;
@@ -28,7 +29,7 @@ export class AribaFactoryImpl implements IAribaFactory {
     private readonly _config: IAribaConfiguration;
 
     private _browser?: Browser;
-    private _logger: Logger;
+    private _logger: winston.Logger;
     private _website?: IAribaWebsiteApi;
     private _pageHelper?: IPageHelpers;
     private _pageFormHelper?: IPageFormHelper;
@@ -36,7 +37,7 @@ export class AribaFactoryImpl implements IAribaFactory {
     public constructor(configuration: IAribaConfiguration) {
         this._config = configuration;
 
-        const { combine, splat, timestamp, printf } = format;
+        const { combine, splat, timestamp, printf } = winston.format;
         const myFormat = printf(({ level, message, timestamp, loggerName, ...metadata }) => {
             let msg = `${timestamp} [${level}] ${loggerName}: ${message} `;
 
@@ -54,18 +55,18 @@ export class AribaFactoryImpl implements IAribaFactory {
             //
         } else {
             const logLevel = configuration.logger?.logLevel || "debug";
-            this._logger = createLogger({
+            this._logger = winston.createLogger({
                 level: logLevel,
                 format: combine(
-                    format.colorize(),
+                    winston.format.colorize(),
                     splat(),
                     timestamp(),
                     myFormat,
                 ),
                 transports: [
-                    new transports.Console({ level: logLevel }) as Transport,
+                    new winston.transports.Console({ level: logLevel }) as Transport,
                 ].concat(((): Transport[] => (configuration.logger?.logFile && [
-                    new transports.File({ filename: configuration.logger.logFile, level: logLevel }) as Transport,
+                    new winston.transports.File({ filename: configuration.logger.logFile, level: logLevel }) as Transport,
                 ]) || [])()),
             });
         }
@@ -204,7 +205,7 @@ export class AribaFactoryImpl implements IAribaFactory {
         return this._pageFormHelper;
     }
 
-    public createLogger(loggerName: string): Logger {
+    public createLogger(loggerName: string): winston.Logger {
         return this._logger.child({ loggerName });
     }
 

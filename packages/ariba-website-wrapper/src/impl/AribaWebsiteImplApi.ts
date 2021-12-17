@@ -1,10 +1,10 @@
 import type { Logger } from "winston";
 
-import type { IAribaFactory } from "../IAribaFactory";
-import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
-import type { IPurchaseOrder } from "../IPurchaseOrder";
+import type { IAribaFactory } from "../IAribaFactory.js";
+import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
+import type { IPurchaseOrder } from "../IPurchaseOrder.js";
 
-import { TPurchaseOrderState, status2String } from "../IPurchaseOrder";
+import { TPurchaseOrderState, status2String } from "../IPurchaseOrder.js";
 
 
 export class AribaWebsiteImplApi implements IAribaWebsiteApi {

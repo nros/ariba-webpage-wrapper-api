@@ -1,7 +1,7 @@
 import type { Page } from "puppeteer";
 import type { Logger } from "winston";
-import type { IAribaFactory } from "../IAribaFactory";
-import type { IPageHelpers } from "../IPageHelpers";
+import type { IAribaFactory } from "../IAribaFactory.js";
+import type { IPageHelpers } from "../IPageHelpers.js";
 
 export class PageFormHelperImpl implements PageFormHelperImpl {
     private _factory: IAribaFactory;

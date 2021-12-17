@@ -1,13 +1,13 @@
 import type express from "express";
 import type { IAribaWebsite } from "ariba-website-wrapper";
-import type { IMiddleware } from "../IMiddleware";
-import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
-import type { RequestWithConfig } from "./ConfigMiddleware";
-import type { TAsyncMiddleware } from "./BaseMiddleware";
-import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
+import type { IMiddleware } from "../IMiddleware.js";
+import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl.js";
+import type { RequestWithConfig } from "./ConfigMiddleware.js";
+import type { TAsyncMiddleware } from "./BaseMiddleware.js";
+import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
 import { createAribaWebsite } from "ariba-website-wrapper";
-import { BaseMiddleware } from "./BaseMiddleware";
+import { BaseMiddleware } from "./BaseMiddleware.js";
 
 interface IAribaWebsiteCacheEntry {
     user: string;

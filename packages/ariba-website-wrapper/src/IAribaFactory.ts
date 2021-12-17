@@ -1,13 +1,13 @@
 import type { Browser, Page } from "puppeteer";
 import type { Logger } from "winston";
 
-import type { IAribaConfiguration } from "./IAribaConfiguration";
-import type { IAribaWebsiteApi } from "./IAribaWebsiteApi";
-import type { IInvoicePage } from "./IInvoicePage";
-import type { ILoginPage } from "./ILoginPage";
-import type { IPageFormHelper } from "./IPageFormHelper";
-import type { IPageHelpers } from "./IPageHelpers";
-import type { IPurchaseOrderPage } from "./IPurchaseOrderPage";
+import type { IAribaConfiguration } from "./IAribaConfiguration.js";
+import type { IAribaWebsiteApi } from "./IAribaWebsiteApi.js";
+import type { IInvoicePage } from "./IInvoicePage.js";
+import type { ILoginPage } from "./ILoginPage.js";
+import type { IPageFormHelper } from "./IPageFormHelper.js";
+import type { IPageHelpers } from "./IPageHelpers.js";
+import type { IPurchaseOrderPage } from "./IPurchaseOrderPage.js";
 
 /**
  * The factory used with the Ariba website wrapper.

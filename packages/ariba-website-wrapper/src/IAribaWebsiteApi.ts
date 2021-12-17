@@ -1,4 +1,4 @@
-import type { IPurchaseOrder, TPurchaseOrderState } from "./IPurchaseOrder";
+import type { IPurchaseOrder, TPurchaseOrderState } from "./IPurchaseOrder.js";
 
 /**
  * A wrapper of the Ariba webshop website to perform some actions utilising an internal headless browser.

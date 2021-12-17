@@ -1,6 +1,6 @@
-import type { IApiServer } from "./IApiServer";
+import type { IApiServer } from "./IApiServer.js";
 
-import { ApiServerImpl } from "./impl/ApiServerImpl";
+import { ApiServerImpl } from "./impl/ApiServerImpl.js";
 
 // install signal handlers
 let apiServer: IApiServer;

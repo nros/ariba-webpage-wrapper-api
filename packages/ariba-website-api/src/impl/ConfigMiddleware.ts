@@ -1,9 +1,9 @@
 import type express from "express";
-import type { IMiddleware } from "../IMiddleware";
-import type { IApiConfiguration } from "../ApiConfiguration";
+import type { IMiddleware } from "../IMiddleware.js";
+import type { IApiConfiguration } from "../ApiConfiguration.js";
 
-import { readConfiguaration } from "../ApiConfiguration";
-import { IApiServer } from "../IApiServer";
+import { readConfiguaration } from "../ApiConfiguration.js";
+import { IApiServer } from "../IApiServer.js";
 
 export type RequestWithConfig = express.Request & {
     apiConfig: IApiConfiguration;

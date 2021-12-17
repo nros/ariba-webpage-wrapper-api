@@ -1,5 +1,5 @@
 import type { Page } from "puppeteer";
-import type { IAribaPage } from "./IAribaPage";
+import type { IAribaPage } from "./IAribaPage.js";
 
 /**
  * The timeout to perform a login page reload

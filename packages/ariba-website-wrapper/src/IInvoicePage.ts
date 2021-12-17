@@ -1,4 +1,4 @@
-import type { IAribaPage } from "./IAribaPage";
+import type { IAribaPage } from "./IAribaPage.js";
 
 export interface IInvoicePage extends IAribaPage {
     /**

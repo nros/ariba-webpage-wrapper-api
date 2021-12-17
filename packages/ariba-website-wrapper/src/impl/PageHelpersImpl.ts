@@ -1,5 +1,5 @@
 import type { Page } from "puppeteer";
-import type { IPageHelpers } from "../IPageHelpers";
+import type { IPageHelpers } from "../IPageHelpers.js";
 
 export class PageHelpersImpl implements IPageHelpers {
     public async deactivateAribaClickCheck(page: Page): Promise<Page> {

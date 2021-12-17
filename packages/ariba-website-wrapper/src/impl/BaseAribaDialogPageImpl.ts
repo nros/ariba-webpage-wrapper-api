@@ -1,7 +1,7 @@
 import type { Page } from "puppeteer";
-import type { IAribaPage } from "../IAribaPage";
+import type { IAribaPage } from "../IAribaPage.js";
 
-import { BaseAribaPageImpl } from "./BaseAribaPageImpl";
+import { BaseAribaPageImpl } from "./BaseAribaPageImpl.js";
 
 /**
  * The base interface for all wrappers of Ariba website pages.

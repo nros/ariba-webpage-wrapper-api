@@ -1,16 +1,16 @@
 import type express from "express";
 import type { ParamsDictionary, Request, Response } from "express-serve-static-core";
 import type { ParsedQs } from "qs";
-import type { IMiddleware } from "../IMiddleware";
-import type { IApiServer } from "../IApiServer";
-import type { HttpError, HttpResponseErrorMessage } from "../IApiServer";
+import type { IMiddleware } from "../IMiddleware.js";
+import type { IApiServer } from "../IApiServer.js";
+import type { HttpError, HttpResponseErrorMessage } from "../IApiServer.js";
 import type {
     ILongRunningTaskManager,
     ITaskManagerTaskControl,
     Task,
     TRequestWithTaskManager,
     TLongRunningTaskResultGenerator,
-} from "../ILongRunningTaskManager";
+} from "../ILongRunningTaskManager.js";
 
 import PQueue from "p-queue";
 import { v4 as uuidv4 } from "uuid";

@@ -1,8 +1,8 @@
 import type { Page } from "puppeteer";
-import type { ILoginPage } from "../ILoginPage";
+import type { ILoginPage } from "../ILoginPage.js";
 
-import { BaseAribaPageImpl } from "./BaseAribaPageImpl";
-import { LOGIN_REFRESH_TIMEOUT } from "../ILoginPage";
+import { BaseAribaPageImpl } from "./BaseAribaPageImpl.js";
+import { LOGIN_REFRESH_TIMEOUT } from "../ILoginPage.js";
 
 /***
  * Opens a login page and authenticates. The login page is kept open and refreshed every 5 minutes to keep the

@@ -1,6 +1,6 @@
-import { IAribaConfiguration } from "./IAribaConfiguration";
-import { IAribaWebsite } from "./IAribaWebsite";
-import { AribaWebsiteImpl } from "./impl/AribaWebsiteImpl";
+import { IAribaConfiguration } from "./IAribaConfiguration.js";
+import { IAribaWebsite } from "./IAribaWebsite.js";
+import { AribaWebsiteImpl } from "./impl/AribaWebsiteImpl.js";
 
 export async function createAribaWebsite(configuration: IAribaConfiguration): Promise<IAribaWebsite> {
     return (new AribaWebsiteImpl())

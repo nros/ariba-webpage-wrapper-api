@@ -1,10 +1,10 @@
 import type { Page } from "puppeteer";
 import type { Logger } from "winston";
-import type { IAribaConfiguration } from "../IAribaConfiguration";
-import type { IAribaFactory } from "../IAribaFactory";
-import type { IAribaPage } from "../IAribaPage";
-import type { IPageFormHelper } from "../IPageFormHelper";
-import type { IPageHelpers } from "../IPageHelpers";
+import type { IAribaConfiguration } from "../IAribaConfiguration.js";
+import type { IAribaFactory } from "../IAribaFactory.js";
+import type { IAribaPage } from "../IAribaPage.js";
+import type { IPageFormHelper } from "../IPageFormHelper.js";
+import type { IPageHelpers } from "../IPageHelpers.js";
 
 /**
  * The base interface for all wrappers of Ariba website pages.

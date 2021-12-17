@@ -1,12 +1,12 @@
 import type { Logger } from "winston";
 
-import type { IAribaConfiguration } from "../IAribaConfiguration";
-import type { IAribaFactory } from "../IAribaFactory";
-import type { IAribaWebsite } from "../IAribaWebsite";
-import type { IAribaWebsiteApi } from "../IAribaWebsiteApi";
-import type { ILoginPage } from "../ILoginPage";
+import type { IAribaConfiguration } from "../IAribaConfiguration.js";
+import type { IAribaFactory } from "../IAribaFactory.js";
+import type { IAribaWebsite } from "../IAribaWebsite.js";
+import type { IAribaWebsiteApi } from "../IAribaWebsiteApi.js";
+import type { ILoginPage } from "../ILoginPage.js";
 
-import { AribaFactoryImpl } from "./AribaFactoryImpl";
+import { AribaFactoryImpl } from "./AribaFactoryImpl.js";
 
 /**
  * A wrapper around a browser instance to drive the Ariba webshop.

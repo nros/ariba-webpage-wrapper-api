@@ -1,4 +1,4 @@
-import type { IMiddlewareNeedsTimer } from "./IMiddlewareNeedsTimer";
+import type { IMiddlewareNeedsTimer } from "./IMiddlewareNeedsTimer.js";
 
 export interface HttpError extends Error { status: number }
 

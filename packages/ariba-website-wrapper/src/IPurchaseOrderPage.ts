@@ -1,8 +1,8 @@
 import type { Page } from "puppeteer";
-import type { IAribaPage } from "./IAribaPage";
-import type { IPurchaseOrder } from "./IPurchaseOrder";
+import type { IAribaPage } from "./IAribaPage.js";
+import type { IPurchaseOrder } from "./IPurchaseOrder.js";
 
-import { TPurchaseOrderState } from "./IPurchaseOrder";
+import { TPurchaseOrderState } from "./IPurchaseOrder.js";
 
 export interface IPurchaseOrderPage extends IAribaPage {
     /**

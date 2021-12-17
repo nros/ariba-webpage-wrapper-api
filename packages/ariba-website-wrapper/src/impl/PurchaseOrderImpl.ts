@@ -1,5 +1,5 @@
-import type { TBrowser } from "./puppeteer-with-plugins";
-import { IPurchaseOrder, TPurchaseOrderState } from "../IPurchaseOrder";
+import type { TBrowser } from "./puppeteer-with-plugins.js";
+import { IPurchaseOrder, TPurchaseOrderState } from "../IPurchaseOrder.js";
 
 export class PurchaseOrderImpl implements IPurchaseOrder {
     private readonly _id: string;

@@ -2,26 +2,26 @@
 import type * as http from "http";
 import type { ParsedQs } from "qs";
 import type { IAribaWebsite, IAribaWebsiteApi } from "ariba-website-wrapper";
-import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl";
-import type { RequestWithAribaWebsite } from "./AribaApiMiddleware";
-import type { HttpError, IApiServer } from "../IApiServer";
+import type { RequestWithAuthentication } from "./AuthenticatorJsonImpl.js";
+import type { RequestWithAribaWebsite } from "./AribaApiMiddleware.js";
+import type { HttpError, IApiServer } from "../IApiServer.js";
 import type {
     ITaskManagerTaskControl,
     Task,
     TLongRunningTaskResultGenerator,
     TRequestWithTaskManager
-} from "../ILongRunningTaskManager";
-import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
+} from "../ILongRunningTaskManager.js";
+import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
 import express from "express";
 import bodyParser from "body-parser";
 import nocache from "nocache";
 
-import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl";
-import { ConfigMiddleware } from "./ConfigMiddleware";
-import { AribaApiMiddleware } from "./AribaApiMiddleware";
-import { LongRunningTaskMiddleware } from "./LongRunningTaskMiddleware";
-import { sendResponseJson, sendResponseError } from "./http-utils";
+import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl.js";
+import { ConfigMiddleware } from "./ConfigMiddleware.js";
+import { AribaApiMiddleware } from "./AribaApiMiddleware.js";
+import { LongRunningTaskMiddleware } from "./LongRunningTaskMiddleware.js";
+import { sendResponseJson, sendResponseError } from "./http-utils.js";
 
 const DAY = 1000 * 60 * 60 * 24;
 

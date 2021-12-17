@@ -1,5 +1,5 @@
-import type { IAribaConfiguration } from "./IAribaConfiguration";
-import type { IAribaWebsiteApi } from "./IAribaWebsiteApi";
+import type { IAribaConfiguration } from "./IAribaConfiguration.js";
+import type { IAribaWebsiteApi } from "./IAribaWebsiteApi.js";
 
 /**
  * A wrapper around a browser instance to drive the Ariba webshop.

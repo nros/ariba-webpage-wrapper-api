@@ -1,5 +1,5 @@
 import type { Page } from "puppeteer";
-import type { IAribaConfiguration } from "./IAribaConfiguration";
+import type { IAribaConfiguration } from "./IAribaConfiguration.js";
 
 /**
  * The base interface for all wrappers of Ariba website pages.

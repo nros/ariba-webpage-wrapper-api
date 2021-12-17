@@ -1,11 +1,11 @@
 import type express from "express";
-import type { IMiddleware } from "../IMiddleware";
-import type { TAsyncMiddleware } from "./BaseMiddleware";
-import type { IApiServer } from "../IApiServer";
+import type { IMiddleware } from "../IMiddleware.js";
+import type { TAsyncMiddleware } from "./BaseMiddleware.js";
+import type { IApiServer } from "../IApiServer.js";
 
 import basicAuth from "express-basic-auth";
-import { readConfigurationFile } from "../ApiConfiguration";
-import { BaseMiddleware } from "./BaseMiddleware";
+import { readConfigurationFile } from "../ApiConfiguration.js";
+import { BaseMiddleware } from "./BaseMiddleware.js";
 
 export const USER_DB_FILE = "users.json";
 

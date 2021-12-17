@@ -1,6 +1,6 @@
 import type { Page } from "puppeteer";
-import type { IInvoicePage } from "../IInvoicePage";
-import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl";
+import type { IInvoicePage } from "../IInvoicePage.js";
+import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
 
 export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoicePage {

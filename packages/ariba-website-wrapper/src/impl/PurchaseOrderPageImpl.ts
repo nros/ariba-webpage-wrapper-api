@@ -1,8 +1,8 @@
 import type { Page } from "puppeteer";
-import type { IPurchaseOrder } from "../IPurchaseOrder";
-import { TPurchaseOrderState } from "../IPurchaseOrder";
-import type { IPurchaseOrderPage } from "../IPurchaseOrderPage";
-import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl";
+import type { IPurchaseOrder } from "../IPurchaseOrder.js";
+import { TPurchaseOrderState } from "../IPurchaseOrder.js";
+import type { IPurchaseOrderPage } from "../IPurchaseOrderPage.js";
+import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
 
 export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IPurchaseOrderPage {
@@ -249,6 +249,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             ), 20);
         });
 
+        /*
         this._logger.debug("Confirm invoice and got to next page of form");
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
@@ -262,6 +263,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             this.clickButtonWithText(page, "Submit"),
             await page.waitForNavigation(),
         ]);
+*/
         return {
             id: purchaseOrderId,
             state: TPurchaseOrderState.INVOICED,

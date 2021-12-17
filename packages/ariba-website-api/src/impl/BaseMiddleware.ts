@@ -1,7 +1,7 @@
 import type express from "express";
-import type { IMiddleware } from "../IMiddleware";
-import type { IApiServer } from "../IApiServer";
-import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer";
+import type { IMiddleware } from "../IMiddleware.js";
+import type { IApiServer } from "../IApiServer.js";
+import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
 export type TAsyncMiddleware = (request: express.Request, response: express.Response) => PromiseLike<void>;
 

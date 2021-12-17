@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import type { Response } from "express-serve-static-core";
-import type { HttpError, HttpResponseErrorMessage } from "../IApiServer";
+import type { HttpError, HttpResponseErrorMessage } from "../IApiServer.js";
 
 export function sendResponseError<ResBody = unknown, Locals extends Record<string, unknown> = Record<string, unknown>>(
     responsePromise: Response<ResBody | HttpResponseErrorMessage, Locals> | PromiseLike<Response<ResBody | HttpResponseErrorMessage, Locals>>,

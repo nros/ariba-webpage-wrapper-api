@@ -1,7 +1,7 @@
 import type express from "express";
 import type { ParsedQs } from "qs";
 import type { ParamsDictionary, Request, Response } from "express-serve-static-core";
-import type { HttpError, HttpResponseErrorMessage } from "./IApiServer";
+import type { HttpError, HttpResponseErrorMessage } from "./IApiServer.js";
 
 export type TLongRunningTaskResultGenerator =
     <Locals extends Record<string, unknown> = Record<string, unknown>>(
