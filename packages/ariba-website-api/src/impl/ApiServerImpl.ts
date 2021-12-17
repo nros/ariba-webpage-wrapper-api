@@ -9,7 +9,7 @@ import type {
     ITaskManagerTaskControl,
     Task,
     TLongRunningTaskResultGenerator,
-    TRequestWithTaskManager
+    TRequestWithTaskManager,
 } from "../ILongRunningTaskManager.js";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
@@ -198,7 +198,7 @@ export class ApiServerImpl implements IApiServer {
                                 (error: HttpError) =>
                                     ((response) => sendResponseError(response)(error)) as TLongRunningTaskResultGenerator,
                             )
-                            ;
+                        ;
                     };
 
                     taskManager.executeLongRunningTask(command, request, response, next);
