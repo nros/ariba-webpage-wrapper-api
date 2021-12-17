@@ -112,7 +112,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         await page.evaluate((text, tag) => {
             const $button = jQuery(tag + ":contains('" + text + "'):first");
             if ($button.length === 0) {
-                // throw new Error("Button can not be found. selector: \"" + tag + ":contains('" + text + "'):first\"");
+                throw new Error("Button can not be found. selector: \"" + tag + ":contains('" + text + "'):first\"");
             }
             window.ariba.Handlers.fakeClick($button[0]);
         }, text, tag);
