@@ -238,6 +238,7 @@ export class ApiServerImpl implements IApiServer {
             const ariba = this.extractAribeWebsiteFromRequest(request);
 
             if (!ariba) {
+                this._logger.error("No Ariba website wrapper has been initialised!");
                 sendResponseError(response)("No Ariba website wrapper has been initialised!");
 
             } else {
@@ -254,8 +255,10 @@ export class ApiServerImpl implements IApiServer {
                             .then(
                                 (data) =>
                                     ((response) => sendResponseJson(response)(data)) as TLongRunningTaskResultGenerator,
-                                (error: HttpError) =>
-                                    ((response) => sendResponseError(response)(error)) as TLongRunningTaskResultGenerator,
+                                (error: HttpError) => {
+                                    this._logger.error("Long running Task execution error! " + error.message, [error]);
+                                    return ((response) => sendResponseError(response)(error)) as TLongRunningTaskResultGenerator;
+                                },
                             )
                         ;
                     };
@@ -268,7 +271,10 @@ export class ApiServerImpl implements IApiServer {
                         .then((webSite) => webSite.getAribaWebsiteApi())
                         .then((api) => aribaCaller({ ...bodyParams, ...request.query, ...request.params }, api))
                         .then(sendResponseJson(response))
-                        .catch(sendResponseError(response));
+                        .catch((error) => {
+                            this._logger.error("Long running Task execution error! " + error.message, [error]);
+                            sendResponseError(response)(error);
+                        });
                 }
             }
         };
