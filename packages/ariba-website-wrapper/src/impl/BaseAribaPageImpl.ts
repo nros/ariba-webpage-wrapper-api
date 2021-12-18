@@ -5,6 +5,7 @@ import type { IAribaFactory } from "../IAribaFactory.js";
 import type { IAribaPage } from "../IAribaPage.js";
 import type { IPageFormHelper } from "../IPageFormHelper.js";
 import type { IPageHelpers } from "../IPageHelpers.js";
+import type { TLoginError } from "../ILogin.js";
 
 /**
  * The base interface for all wrappers of Ariba website pages.
@@ -68,7 +69,11 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
         // check to see if the session was still active or a login is needed
         await page.waitForSelector("div.dashboard-container")
-            .catch((error) => Promise.reject(new Error("Session has expired! Please login again! " + error)))
+            .catch((error) => {
+                const loginError = new Error("Session has expired! Please login again! " + error) as TLoginError;
+                loginError.isLoginNeeded = true;
+                return Promise.reject(loginError);
+            })
         ;
 
         return this;

@@ -4,6 +4,7 @@ import type { Logger } from "winston";
 import type { IAribaDialogPage } from "../IAribaDialogPage.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
 import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
+import type { TLoginError } from "../ILogin.js";
 import type { IPurchaseOrder } from "../IPurchaseOrder.js";
 
 import PQueue from "p-queue";
@@ -316,6 +317,14 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
 
                 this._logger.info(`================= Executing next task '${taskName}' ======================`);
                 return task()
+                    .catch((error) => {
+                        // try again if the task failed because the login has expired
+                        if ((error as TLoginError).isLoginNeeded) {
+                            return this.doLogin().then(() => task());
+                        } else {
+                            return Promise.reject(error);
+                        }
+                    })
                     .then(
                         (data) => {
                             this._logger.debug(`----------------- ENDING task '${taskName}' -----------------`);
