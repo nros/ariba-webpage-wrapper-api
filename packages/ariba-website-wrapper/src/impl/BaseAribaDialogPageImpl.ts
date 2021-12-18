@@ -14,15 +14,15 @@ export abstract class BaseAribaDialogPageImpl extends BaseAribaPageImpl implemen
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
             page.evaluate(() =>
-                window.ariba.Handlers.fakeClick(jQuery("button:contains('Done')").first()[0]),
+                window.ariba?.Handlers?.fakeClick(jQuery("button:contains('Done')").first()[0]),
             ),
             page.waitForNavigation({ waitUntil: "networkidle0" }),
-        ]);
+        ]).catch((error) => this._logger.error(error));
 
         // this session storage item makes Ariba website re-open detail page again
         await page.evaluate(() => {
             sessionStorage.removeItem("an:pageName");
-        });
+        }).catch();
 
         return this;
     }
