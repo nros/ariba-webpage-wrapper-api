@@ -5,31 +5,13 @@ import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
 export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoicePage {
     //
-    private _cachedLastInvoiceNumber: Promise<string | undefined> = Promise.resolve(undefined);
-
     public get loggerName(): string {
         return "InvoicePageImpl";
     }
 
     public async getLatestInvoiceNumber(): Promise<string> {
         // try to read cached value first
-        return this._cachedLastInvoiceNumber
-            .catch(() => undefined) // ignore and try again
-            .then((number) => {
-                if (!number) {
-                    this._cachedLastInvoiceNumber = this.readLatestInvoiceNumberFromPage(this.page);
-                    return this._cachedLastInvoiceNumber;
-                }
-                return number;
-            })
-            .then((num) => {
-                this._logger.debug(`Invoice number has been read to: ${num}`);
-                if (!num) {
-                    throw new Error("Failed to read last invoice number from web page");
-                }
-                return num;
-            })
-        ;
+        return this.readLatestInvoiceNumberFromPage(this.page);
     }
 
     /**
@@ -39,10 +21,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         return this.getLatestInvoiceNumber()
             .then((currentInvoiceNumber) => {
                 const newNumber = +currentInvoiceNumber.replace(/20[0-9][0-9]-/, "") + 1;
-                const newNumberStr = this.formatNewInvoiceNumber(newNumber);
-                this._cachedLastInvoiceNumber = Promise.resolve(newNumberStr);
-
-                return newNumberStr;
+                return this.formatNewInvoiceNumber(newNumber);
             })
         ;
     }
