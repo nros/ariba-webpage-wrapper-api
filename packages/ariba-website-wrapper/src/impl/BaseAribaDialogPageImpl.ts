@@ -11,13 +11,19 @@ export abstract class BaseAribaDialogPageImpl extends BaseAribaPageImpl implemen
         this.createLogger("BaseAribaDialogPageImpl")
             .debug("Closing dialog page.");
 
-        await this.pageHelper.deactivateAribaClickCheck(page);
-        await Promise.all([
-            page.evaluate(() =>
-                window.ariba?.Handlers?.fakeClick(jQuery("button:contains('Done')").first()[0]),
-            ),
-            page.waitForNavigation({ waitUntil: "networkidle0" }),
-        ]).catch((error) => this._logger.error(error));
+        const isButtonVisible = await page.evaluate(() =>
+            window.jQuery("button:contains('Done')").length > 0,
+        );
+
+        if (isButtonVisible) {
+            await this.pageHelper.deactivateAribaClickCheck(page);
+            await Promise.all([
+                page.evaluate(() =>
+                    window.ariba?.Handlers?.fakeClick(jQuery("button:contains('Done')").first()[0]),
+                ),
+                page.waitForNavigation({ waitUntil: "networkidle0" }),
+            ]).catch((error) => this._logger.error(error));
+        }
 
         // this session storage item makes Ariba website re-open detail page again
         await page.evaluate(() => {
