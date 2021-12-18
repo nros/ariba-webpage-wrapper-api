@@ -32,6 +32,8 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             return TPurchaseOrderState.CONFIRMED;
         case "shipped":
             return TPurchaseOrderState.DELIVERY_INITIATED;
+        case "invoiced":
+            return TPurchaseOrderState.INVOICED;
         default:
             throw new Error("Failed to read status of order. Status is unknown: " + status);
         }
@@ -193,7 +195,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         // first, check order status. In case of error, assume already confirmed
         const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
-        if (state !== TPurchaseOrderState.DELIVERY_INITIATED) {
+        if (state === TPurchaseOrderState.INVOICED) {
+            throw Error("Purchase order has already been invoiced.");
+
+        } else if (state !== TPurchaseOrderState.DELIVERY_INITIATED) {
             throw Error("Purchase order must be delivered first to create an invoice.");
         }
 
