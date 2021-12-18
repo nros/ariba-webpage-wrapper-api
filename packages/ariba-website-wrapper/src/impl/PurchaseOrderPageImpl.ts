@@ -204,10 +204,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         this._logger.info(`Activate the submenu of the create invoice button.`);
         await page.evaluate(() => window.ariba.Menu.PML.click(
-            jQuery("button[title*='Create'][title*='order confirmation']")
+            jQuery("button:contains('Create Invoice')")
                 // for some reason, more than a single button is available in the page. Only the last one
                 // is visible, but ":visible" does not filter the others.
-                .last()
+                .first()
                 .parents(".w-pulldown-button")
                 .first()[0],
         ));
