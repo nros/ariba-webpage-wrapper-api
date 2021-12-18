@@ -64,6 +64,9 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         logger.debug("Opening overview page URL.");
         await page.goto(this.config.overviewPageUrl);
 
+        // wait two seconds. For some reason, puppeteer is too fast for Ariba web site
+        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
+
         // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
         await page.waitForNavigation({ waitUntil: "networkidle2" });
 

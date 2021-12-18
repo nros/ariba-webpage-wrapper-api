@@ -24,6 +24,9 @@ export abstract class BaseAribaDialogPageImpl extends BaseAribaPageImpl implemen
             sessionStorage.removeItem("an:pageName");
         }).catch();
 
+        // wait two seconds. For some reason, puppeteer is too fast for Ariba web site
+        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
+
         return this;
     }
 }
