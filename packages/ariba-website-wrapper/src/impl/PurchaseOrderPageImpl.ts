@@ -213,6 +213,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         ));
 
         this._logger.info(`Activate "Standard Invoice" button.`);
+        await this.pageHelper.loadJQuery(page);
         await page.evaluate(() =>
             window.ariba.Handlers.fakeClick(jQuery("a:contains('Standard Invoice')")[0]),
         );
