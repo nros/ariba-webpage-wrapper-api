@@ -76,20 +76,44 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
 
         // if there is no invoice, then return the initial value
         const isEmpty = await page.evaluate(() =>
-            window.jQuery("h2:contains('Invoices (0)')").length === 0,
+            window.jQuery("h2:contains('Invoices')").first().text().trim().replace(/Invoices\s*/, "").replace(/[()]/g, "") === "0",
         );
 
-        if (isEmpty) {
+        let lastNumber: string | undefined;
+        if (!isEmpty) {
+            // get maximum number in the list
+            this._logger.debug("Reading last invoice number.");
+            lastNumber = await page.evaluate(() => {
+                const $rowHeader = window.jQuery("th a:contains('Invoice #')").first().parents("th").first();
+
+                let child = 1;
+                let $currentSibling = $rowHeader;
+                while ($currentSibling.prev()[0]) {
+                    child++;
+                    $currentSibling = $currentSibling.prev();
+                }
+
+                const $table = $rowHeader.parents("tbody").first();
+                const $invoiceNumberRows = $table.children("tr").children("td:nth-child(" + child + ")");
+
+                const numbers: string[] = [];
+                window.jQuery.each($invoiceNumberRows, (index: number, value: JQuery.PlainObject<any>) => {
+                    numbers.push(jQuery(value).text().trim());
+                });
+
+                numbers.sort();
+                return numbers.pop();
+            });
+        }
+
+        if (isEmpty || !lastNumber) {
             const startInvoiceNumber = this.formatNewInvoiceNumber(0);
             this._logger.warn(`NO invoice number can be found! Using '0' to start with:  ${startInvoiceNumber}`);
             return startInvoiceNumber;
+
+        } else {
+            return lastNumber;
         }
-
-        // get maximum number in the list
-        // TODO!
-
-        this._logger.debug("Reading last invoice number.");
-        throw new Error("NOT YET IMPLEMENTED");
     }
 
     private formatNewInvoiceNumber(num: number): string {
