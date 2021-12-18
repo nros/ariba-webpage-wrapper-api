@@ -272,7 +272,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             ), 20);
         });
 
-        /*
         this._logger.debug("Confirm invoice and got to next page of form");
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
@@ -284,9 +283,16 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
             this.clickButtonWithText(page, "Submit"),
-            await page.waitForNavigation(),
+            page.waitForNavigation(),
         ]);
-*/
+
+        // exit the invoice form
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await Promise.all([
+            page.evaluate(() => window.ariba.Handlers.fakeClick(window.$x("//a[contains(text(), 'Exit')]")[0])),
+            page.waitForNavigation(),
+        ]);
+
         return {
             id: purchaseOrderId,
             state: TPurchaseOrderState.INVOICED,
