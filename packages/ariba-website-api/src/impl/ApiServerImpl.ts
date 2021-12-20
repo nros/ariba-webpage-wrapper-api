@@ -250,15 +250,29 @@ export class ApiServerImpl implements IApiServer {
 
             } else {
                 const taskManager = getTaskManagerFromRequest(request);
+                const callAriba = (taskControl: ITaskManagerTaskControl) =>
+                    ariba
+                        .startSession()
+                        .then(taskControl.checkAndPass)
+                        .then((webSite) => webSite.getAribaWebsiteApi())
+                        .then(taskControl.checkAndPass)
+                        .then((api) => aribaCaller({ ...bodyParams, ...request.query, ...request.params }, api, taskControl))
+                ;
+
 
                 if (isLongRunning && taskManager) {
                     const command: Task = (taskControl) => {
-                        return ariba
-                            .startSession()
-                            .then(taskControl.checkAndPass)
-                            .then((webSite) => webSite.getAribaWebsiteApi())
-                            .then(taskControl.checkAndPass)
-                            .then((api) => aribaCaller({ ...bodyParams, ...request.query, ...request.params }, api, taskControl))
+                        return callAriba(taskControl)
+                            .catch((error: Error) => {
+                                // try again once in case of a timeout error
+                                if (error?.message?.toLocaleLowerCase().indexOf("timeout") >= 0) {
+                                    return callAriba(taskControl);
+                                }
+
+                                // for all other cases, just pass the error
+                                return Promise.reject(error);
+                            })
+
                             .then(
                                 (data) =>
                                     ((response) => sendResponseJson(response)(data)) as TLongRunningTaskResultGenerator,
