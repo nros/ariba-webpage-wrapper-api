@@ -286,7 +286,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
             this.clickButtonWithText(page, "Submit"),
-            page.waitForNavigation(),
+            page.waitForNavigation().catch(),
         ]);
 
         await this.pageHelper.wait(1);
@@ -295,7 +295,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
             this.clickButtonWithText(page, "Exit", "a"),
-            page.waitForNavigation(),
+            page.waitForNavigation().catch(),
         ]);
 
         await this.pageHelper.wait(1);
