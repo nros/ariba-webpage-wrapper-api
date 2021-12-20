@@ -1,7 +1,8 @@
 import type { Page } from "puppeteer";
 import type { IPurchaseOrder } from "../IPurchaseOrder.js";
-import { TPurchaseOrderState } from "../IPurchaseOrder.js";
 import type { IPurchaseOrderPage } from "../IPurchaseOrderPage.js";
+
+import { TPurchaseOrderState } from "../IPurchaseOrder.js";
 import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
 
