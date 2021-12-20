@@ -293,7 +293,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         // exit the invoice form
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
-            page.evaluate(() => window.ariba.Handlers.fakeClick(window.$x("//a[contains(text(), 'Exit')]")[0])),
+            this.clickButtonWithText(page, "Exit", "a"),
             page.waitForNavigation(),
         ]);
 
