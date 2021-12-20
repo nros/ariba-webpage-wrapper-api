@@ -250,7 +250,7 @@ export class ApiServerImpl implements IApiServer {
 
             } else {
                 const taskManager = getTaskManagerFromRequest(request);
-                const callAriba = (taskControl: ITaskManagerTaskControl) =>
+                const callAriba = (taskControl: ITaskManagerTaskControl): Promise<T> =>
                     ariba
                         .startSession()
                         .then(taskControl.checkAndPass)
@@ -262,17 +262,25 @@ export class ApiServerImpl implements IApiServer {
 
                 if (isLongRunning && taskManager) {
                     const command: Task = (taskControl) => {
-                        return callAriba(taskControl)
-                            .catch((error: Error) => {
-                                // try again once in case of a timeout error
-                                if (error?.message?.toLocaleLowerCase().indexOf("timeout") >= 0) {
-                                    return callAriba(taskControl);
+
+                        let retries = 0;
+                        const maxRetries = 3;
+                        const onErrorRetry = (error: Error): Promise<T> => {
+                            // try again once in case of a timeout error
+                            if (error?.message?.toLocaleLowerCase().indexOf("timeout") >= 0) {
+                                retries++;
+                                if (retries < maxRetries) {
+                                    this._logger.error(`TIMEOUT ERROR! Retrying (${retries}) ${error.message}`, [error]);
+                                    return callAriba(taskControl).catch(onErrorRetry);
                                 }
+                            }
 
-                                // for all other cases, just pass the error
-                                return Promise.reject(error);
-                            })
+                            // for all other cases, just pass the error
+                            return Promise.reject(error);
+                        };
 
+                        return callAriba(taskControl)
+                            .catch(onErrorRetry)
                             .then(
                                 (data) =>
                                     ((response) => sendResponseJson(response)(data)) as TLongRunningTaskResultGenerator,
