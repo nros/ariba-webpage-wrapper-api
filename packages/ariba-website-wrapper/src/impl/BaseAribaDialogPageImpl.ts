@@ -13,7 +13,7 @@ export abstract class BaseAribaDialogPageImpl extends BaseAribaPageImpl implemen
 
         const isButtonVisible = await page.evaluate(() =>
             window.jQuery("button:contains('Done')").length > 0,
-        );
+        ).catch(() => false);
 
         if (isButtonVisible) {
             await this.pageHelper.deactivateAribaClickCheck(page);

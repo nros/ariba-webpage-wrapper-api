@@ -118,7 +118,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
             }
 
             return waitForButton(30);
-        }, text, tag);
+        }, text, tag).catch();
 
 
         this.createLogger("BaseAribaPageImpl").debug(`Click on first button (tag: ${tag}) with text ${text}`);
