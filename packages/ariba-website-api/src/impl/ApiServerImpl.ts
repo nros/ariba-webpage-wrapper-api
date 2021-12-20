@@ -214,6 +214,14 @@ export class ApiServerImpl implements IApiServer {
             );
         }, true));
 
+        app.post("/orders/:id/invoice", this.callAriba((params, ariba) => {
+            return ariba.createInvoice(
+                (params.id ? params.id + "" : ""),
+                (params.supplierOrderId ? params.supplierOrderId + "" : ""),
+                (params.invoiceNumber ? params.invoiceNumber + "" : ""),
+            );
+        }, true));
+
         return app;
     }
 
