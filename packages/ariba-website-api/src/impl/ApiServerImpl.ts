@@ -183,7 +183,7 @@ export class ApiServerImpl implements IApiServer {
 
         app.post("/orders/:id/confirm", this.callAriba((params, ariba) => {
             return ariba.confirmPurchaseOrder(
-                "" + params.id,
+                (params.id ? params.id + "" : ""),
 
                 // if omitted, estimate the delivery and shipping dates
                 params.estimatedDeliveryDate
@@ -193,7 +193,7 @@ export class ApiServerImpl implements IApiServer {
                     ? "" + params.estimatedShippingDate
                     : new Date(Date.now() + 2 * DAY).toUTCString(),
 
-                "" + params.supplierOrderId,
+                (params.supplierOrderId ? params.supplierOrderId + "" : ""),
             );
         }, true));
 
