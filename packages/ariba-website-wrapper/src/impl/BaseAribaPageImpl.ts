@@ -120,6 +120,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
             return waitForButton(30);
         }, text, tag).catch();
 
+        await this.pageHelper.wait(1);
 
         this.createLogger("BaseAribaPageImpl").debug(`Click on first button (tag: ${tag}) with text ${text}`);
         await page.evaluate((text, tag) => {
@@ -129,6 +130,8 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
             }
             window.ariba.Handlers.fakeClick($button[0]);
         }, text, tag);
+
+        await this.pageHelper.wait(1);
 
         return this;
     }

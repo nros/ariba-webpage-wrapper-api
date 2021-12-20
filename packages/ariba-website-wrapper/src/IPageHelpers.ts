@@ -14,4 +14,12 @@ export interface IPageHelpers {
      * Loads JQuery into the Ariba page if it is not available.
      */
     loadJQuery(page: Page): Promise<Page>;
+
+
+    /**
+     * Wait some seconds before the returned Promise resolves.
+     *
+     * @param seconds the seconds to wait. If omitted, 0.01 second is the default.
+     */
+    wait(seconds?: number): Promise<void>;
 }

@@ -30,4 +30,8 @@ export class PageHelpersImpl implements IPageHelpers {
 
         return page;
     }
+
+    public wait(seconds?: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, 1000 * (seconds || 0.01)));
+    }
 }

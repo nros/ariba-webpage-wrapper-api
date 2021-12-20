@@ -279,6 +279,8 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             page.waitForNavigation(),
         ]);
 
+        await this.pageHelper.wait(1);
+
         this._logger.debug("End invoice order form");
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
@@ -286,12 +288,16 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             page.waitForNavigation(),
         ]);
 
+        await this.pageHelper.wait(1);
+
         // exit the invoice form
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
             page.evaluate(() => window.ariba.Handlers.fakeClick(window.$x("//a[contains(text(), 'Exit')]")[0])),
             page.waitForNavigation(),
         ]);
+
+        await this.pageHelper.wait(1);
 
         return {
             id: purchaseOrderId,
