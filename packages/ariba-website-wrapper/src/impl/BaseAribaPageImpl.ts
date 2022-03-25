@@ -76,7 +76,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
 
         // check to see if the session was still active or a login is needed
-        await page.waitForSelector("div.dashboard-container")
+        await page.waitForSelector("app-dashboard .search-container")
             .catch((error) => {
                 const loginError = new Error("Session has expired! Please login again! " + error) as TLoginError;
                 loginError.isLoginNeeded = true;

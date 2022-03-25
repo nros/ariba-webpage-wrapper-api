@@ -427,13 +427,22 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.info(`Navigate to purchase order (ID: ${purchaseOrderId}) page.`);
         const page = this.page;
 
-        await this.openPurchaseOrderSearchPage(page);
-        await this.pageFormHelper.setFilterOpen(page);
-        await this.setPurchaseOrdersFilterOrderNumber(page, purchaseOrderId);
-        await this.pageFormHelper.pressFilterSearchButton(page);
+        // ensure login has been performed
+        await this.navigateToHome();
+
+        // wait for the form to appear
+        await page.waitForSelector("#search-input-container input[type='text']");
+        await page.focus("#search-input-container input[type='text']");
+        await page.keyboard.type(purchaseOrderId);
+
+        await Promise.all([
+            page.keyboard.press("Enter"),
+            page.waitForNavigation(),
+        ]);
 
         // check to see, whether the purchase order has been found
         this._logger.debug(`Finding the link for purchase order (ID: ${purchaseOrderId}) info page.`);
+        await this.pageHelper.deactivateAribaClickCheck(page);
         const purchaseOrderPageLink = await page.evaluate(
             (purchaseOrderId) => jQuery("table.awtWrapperTable a:contains('" + purchaseOrderId + "')")[0],
             purchaseOrderId,
@@ -455,6 +464,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         // page is loaded via XHR
         this._logger.debug(`Waiting for XHR after opening purchase order infor page (ID: ${purchaseOrderId}).`);
+
         await page.waitForSelector(".pageHead");
         return this;
     }
