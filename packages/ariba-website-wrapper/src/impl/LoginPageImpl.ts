@@ -1,3 +1,4 @@
+import type { Page } from "puppeteer";
 import type { ILoginPage } from "../ILoginPage.js";
 
 import { BaseAribaPageImpl } from "./BaseAribaPageImpl.js";
@@ -11,6 +12,12 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
 
     public get loggerName(): string {
         return "LoginPageImpl";
+    }
+
+    public isLoginPage(page: Page): Promise<boolean> {
+        return page.evaluate(() =>
+            document.querySelectorAll(".loginFormBox input[name='UserName']").length !== 0,
+        );
     }
 
     public async login(): Promise<void> {
@@ -29,11 +36,7 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
         await page.waitForSelector("div.dashboard-container, .loginFormBox input[name='UserName']");
 
         this._logger.debug("Is already logged in? Check whether login form has been loaded");
-        const isAlreadyLoggedIn = await page.evaluate(() =>
-            document.querySelectorAll(".loginFormBox input[name='UserName']").length === 0,
-        );
-
-        if (!isAlreadyLoggedIn) {
+        while (await this.isLoginPage(page)) {
             this._logger.debug("Performing a login with the user credentials");
 
             // fill the login form
@@ -54,6 +57,11 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
                 page.waitForNavigation(),
             ]);
 
+            if (await this.isLoginPage(page)) {
+                // try again
+                continue;
+            }
+
             try {
                 this._logger.debug("Waiting for dashboard to load.");
                 await page.waitForSelector("app-overview-tiles");
@@ -68,8 +76,8 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
             }
 
             this._logger.debug("Login has been performed successfully");
-        } else {
-            this._logger.debug("User is already logged in");
         }
+
+        this._logger.debug("User is logged in now");
     }
 }

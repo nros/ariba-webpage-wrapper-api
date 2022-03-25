@@ -68,6 +68,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
         logger.debug("Opening overview page URL.");
         await page.goto(this.config.overviewPageUrl);
+        await this.loginIfRequired(page, () => page.goto(this.config.overviewPageUrl));
 
         // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
         await page.waitForNavigation({ waitUntil: "networkidle2" }).catch();
@@ -161,5 +162,16 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         return new Promise((resolve: () => void) => {
             setTimeout(resolve, milliseconds);
         });
+    }
+
+    protected async loginIfRequired(page: Page, openExpectedPage: () => Promise<unknown>): Promise<void> {
+        const loginPage = await this._factory.createLoginPage(page);
+        if (await loginPage.isLoginPage(page)) {
+            await loginPage.login();
+
+            if (typeof openExpectedPage === "function") {
+                await openExpectedPage();
+            }
+        }
     }
 }

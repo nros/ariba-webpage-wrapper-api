@@ -28,5 +28,17 @@ export interface ILogin {
      */
     login(): Promise<void>;
 
+    /**
+     * check to see, whether the current page has been switched to a login page.
+     *
+     * <p>
+     * After a certain amount of calls, the ARIBA server seems to enforce a re-login by displaying a LOGIN page
+     * instead of the purchase order overview page. The dashboard seems not affected, to checking the dashboard
+     * does not help. Hence this test will show, whether the login page has been loaded instead.
+     * </p>
+     * @param page
+     */
+    isLoginPage(page: Page): Promise<boolean>;
+
     readonly page: Page;
 }

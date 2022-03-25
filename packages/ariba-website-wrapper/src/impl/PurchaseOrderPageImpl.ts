@@ -22,6 +22,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.navigateToPurchaseOrder(purchaseOrderId);
 
         const page = this.page;
+        await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
         this._logger.debug(`Read order status with jQuery`);
         const status = await page.evaluate(() =>
@@ -78,6 +79,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
 
         const page = this.page;
+        await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
         this._logger.info("Wait for the create ship notice button.");
         (await page.waitForXPath("//button/span[contains(text(), 'Create Ship Notice')]"));
@@ -207,6 +209,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
 
         const page = this.page;
+        await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
         this._logger.info("Wait for the create invoice button.");
         (await page.waitForSelector("button[title*='Create'][title*='invoice']"));
@@ -330,6 +333,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
 
         const page = this.page;
+        await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
         // find the button to open the confirm sub menu
         this._logger.info("Wait for the purchase order confirmation button.");
@@ -457,6 +461,8 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             throw Error("Purchase order has not yet been invoiced.");
         }
 
+        await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
+
         // check to see, whether the purchase order has been found
         this._logger.debug(`Open invoide for purchase order (ID: ${purchaseOrderId}).`);
         await this.pageHelper.deactivateAribaClickCheck(page);
@@ -512,40 +518,40 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.info(`Navigate to purchase order (ID: ${purchaseOrderId}) page.`);
         const page = this.page;
 
-        // ensure login has been performed
-        await this.navigateToHome();
+        const activatePurchaseOrderSearchPage: () => Promise<void> = async () => {
+            await this.navigateToHome();
 
-        // wait for the form to appear
-        await page.waitForSelector("#search-input-container input[type='text']");
-        await page.focus("#search-input-container input[type='text']");
-        await page.keyboard.type(purchaseOrderId);
+            // wait for the form to appear
+            await page.waitForSelector("#search-input-container input[type='text']");
+            await page.focus("#search-input-container input[type='text']");
+            await page.keyboard.type(purchaseOrderId);
 
-        await Promise.all([
-            page.keyboard.press("Enter"),
-            page.waitForNavigation(),
-        ]);
+            await Promise.all([
+                page.keyboard.press("Enter"),
+                page.waitForNavigation(),
+            ]);
+        };
 
-        // check to see, whether the purchase order has been found
-        this._logger.debug(`Finding the link for purchase order (ID: ${purchaseOrderId}) info page.`);
-        await this.pageHelper.deactivateAribaClickCheck(page);
-        const purchaseOrderPageLink = await page.evaluate(
-            (purchaseOrderId) => jQuery("table.awtWrapperTable a:contains('" + purchaseOrderId + "')")[0],
-            purchaseOrderId,
-        );
+        // try again in case of login page
+        await activatePurchaseOrderSearchPage();
+        await this.loginIfRequired(page, activatePurchaseOrderSearchPage);
 
-        if (!purchaseOrderPageLink) {
-            throw new Error("Did not find link to page of Purchase Order " + purchaseOrderId);
-        }
+        const openPurchaseOrderPage: () => Promise<void> = async () => {
+            // check to see, whether the purchase order has been found
+            this._logger.debug(`Finding the link for purchase order (ID: ${purchaseOrderId}) info page.`);
+            await page.waitForSelector(`table.awtWrapperTable a[documentid='${purchaseOrderId}']`);
 
-        this._logger.debug(`Activating the link for purchase order (ID: ${purchaseOrderId}) info page.`);
-        await this.pageHelper.deactivateAribaClickCheck(page);
+            this._logger.debug(`Activating the link for purchase order (ID: ${purchaseOrderId}) info page.`);
+            await this.pageHelper.deactivateAribaClickCheck(page);
+            await page.click(`table.awtWrapperTable a[documentid='${purchaseOrderId}']`);
 
-        // The returned value is just a local version of a remote HTML anchor element. Thus "click()" does not exist.
-        // Hence, the click must happen on the browser side.
-        await page.evaluate(
-            (purchaseOrderId) => jQuery("table.awtWrapperTable a:contains('" + purchaseOrderId + "')")[0].click(),
-            purchaseOrderId,
-        );
+        };
+
+        await openPurchaseOrderPage();
+        await this.loginIfRequired(page, async () => {
+            await activatePurchaseOrderSearchPage();
+            await openPurchaseOrderPage();
+        });
 
         // page is loaded via XHR
         this._logger.debug(`Waiting for XHR after opening purchase order infor page (ID: ${purchaseOrderId}).`);

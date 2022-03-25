@@ -36,26 +36,32 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         // ensure login has been performed
         await this.navigateToHome();
 
-        // wait for the submenu to be available and click it
-        this._logger.debug("Wait for invoice menu to be available and open its submenu");
-        await this.pageHelper.deactivateAribaClickCheck(page);
-        await this.pageHelper.loadJQuery(page);
+        const navigateToInvoiceSearchPage: () => Promise<void> = async () => {
+            // wait for the submenu to be available and click it
+            this._logger.debug("Wait for invoice menu to be available and open its submenu");
+            await this.pageHelper.deactivateAribaClickCheck(page);
+            await this.pageHelper.loadJQuery(page);
 
-        await page.evaluate(() =>
-            window.jQuery("#SUPInvoices").find("fd-popover-control:contains('Invoices')")
-                .trigger("click"),
-        );
+            await page.evaluate(() =>
+                window.jQuery("#SUPInvoices").find("fd-popover-control:contains('Invoices')")
+                    .trigger("click"),
+            );
 
-        // click on link to the list of orders
-        this._logger.debug("Activating the menu entry 'Invoice Search Page'");
-        await Promise.all([
-            page.waitForSelector("#IOSInvoiceList", { visible: false })
-                .then((elem) => {
-                    elem?.click();
-                    return Promise.resolve();
-                }),
-            await page.waitForNavigation(),
-        ]);
+            // click on link to the list of orders
+            this._logger.debug("Activating the menu entry 'Invoice Search Page'");
+            await Promise.all([
+                page.waitForSelector("#IOSInvoiceList", { visible: false })
+                    .then((elem) => {
+                        elem?.click();
+                        return Promise.resolve();
+                    }),
+                await page.waitForNavigation(),
+            ]);
+        };
+
+        // quite often, ARIBA server enforces re-login for unknown reasons
+        await navigateToInvoiceSearchPage();
+        await this.loginIfRequired(page, navigateToInvoiceSearchPage);
 
         this._logger.debug("Waiting for the 'Purchase Order Search Page' to become available");
         await page.waitForXPath("//td[@class='pageHeadingText'][contains(text(), 'Invoices')]");

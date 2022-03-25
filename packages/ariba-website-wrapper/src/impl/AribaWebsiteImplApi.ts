@@ -340,6 +340,11 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         return this;
     }
 
+    public async isLoginPage(page: Page): Promise<boolean> {
+        const loginPage = await this._factory.createLoginPage(page);
+        return loginPage.isLoginPage(page);
+    }
+
     private async doLogin(): Promise<void> {
         this._logger.info("Logging into Ariba.");
         const loginPage = await this._factory.createLoginPage(this.page);
