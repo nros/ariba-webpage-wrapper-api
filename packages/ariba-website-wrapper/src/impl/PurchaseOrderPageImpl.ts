@@ -5,6 +5,9 @@ import type { IPurchaseOrderPage } from "../IPurchaseOrderPage.js";
 import { TPurchaseOrderState } from "../IPurchaseOrder.js";
 import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
+import * as fs from "fs/promises";
+import * as os from "os";
+import * as path from "path";
 
 export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IPurchaseOrderPage {
     //
@@ -421,6 +424,77 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             id: purchaseOrderId,
             state: TPurchaseOrderState.CONFIRMED,
         };
+    }
+
+    public async downloadInvoice(purchaseOrderId: string): Promise<string> {
+        this._logger.info(`Download invoice for purchase order with ID ${purchaseOrderId}.`);
+        const page = this.page;
+
+        const downloadTargetPath = path.join(this.config.downloadDirectory || os.tmpdir(), "ARIBA", purchaseOrderId);
+        await this.setDownloadDirectory(downloadTargetPath);
+
+        await fs.mkdir(downloadTargetPath, { recursive: true }).catch(() => false);
+        async function getDownloadedFileAsFirstFile(directory: string) {
+            return await fs.readdir(directory).then((allFiles) => {
+                if (!allFiles || allFiles.length === 0) {
+                    return undefined;
+                } else {
+                    return allFiles.filter((name) => name && name.charAt(0) !== ".").shift();
+                }
+            });
+        }
+        let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
+        if (downloadedFile) {
+            return downloadedFile;
+        }
+
+        // first, check order status. In case of error, assume already confirmed
+        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
+        if (state !== TPurchaseOrderState.INVOICED) {
+            throw Error("Purchase order has not yet been invoiced.");
+        }
+
+        // check to see, whether the purchase order has been found
+        this._logger.debug(`Open invoide for purchase order (ID: ${purchaseOrderId}).`);
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await page.evaluate(
+            () => jQuery("td.docv-IOSRD-label-related-docs")
+                .next()
+                .children("a")
+                .first()[0]
+                .click(),
+        );
+
+        await page.waitForSelector("div[_mid='downloadPDFMenuIdTop'] button");
+        await this.pageHelper.deactivateAribaClickCheck(page);
+        await page.evaluate(
+            () => jQuery(("div[_mid='downloadPDFMenuIdTop'] button"))[0].click(),
+        );
+
+
+        await Promise.all([
+            page.evaluate(
+                () => window.ariba.Handlers.fakeClick(
+                    jQuery("#downloadPDFMenuIdTop a:contains('PDF')")[0],
+                ),
+            ),
+            await page.waitForNetworkIdle().catch(() => false),
+        ]);
+
+        // find first file in directory
+        let max = 5;
+        downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
+        while (!downloadedFile && max-- > 0) {
+            await page.waitForTimeout(6000);
+            downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
+        }
+
+        await this.closeDialog(page);
+
+        if (!downloadedFile) {
+            throw new Error(`Failed to download invoice for purchase order ${purchaseOrderId}.`);
+        }
+        return downloadedFile;
     }
 
     public async navigateToPurchaseOrder(purchaseOrderId: string): Promise<IPurchaseOrderPage> {

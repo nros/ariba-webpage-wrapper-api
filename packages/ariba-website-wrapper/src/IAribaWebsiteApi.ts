@@ -61,6 +61,8 @@ export interface IAribaWebsiteApi {
         invoiceNumber?: string,
     ): Promise<IPurchaseOrder | undefined>;
 
+    downloadInvoice(purchaseOrderId: string): Promise<string>;
+
     /**
      * Retrieves the status of the purchase order.
      *

@@ -202,6 +202,25 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         });
     }
 
+    public async downloadInvoice(purchaseOrderId: string): Promise<string> {
+        if (!purchaseOrderId) {
+            throw new Error("Invalid purchase order ID!");
+        }
+
+        return await this.addOperationAndWait("downloadInvoice", async () => {
+            this._logger.info(`Download invoice for purchase order with ID ${purchaseOrderId}.`);
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
+
+            try {
+                return await purchaseOrderPage.downloadInvoice(purchaseOrderId);
+            } finally {
+                if (isDialogPage(purchaseOrderPage)) {
+                    await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
+            }
+        });
+    }
+
     public async getPurchaseOrders(filterForState?: TPurchaseOrderState): Promise<IPurchaseOrder[]> {
         /*
         const page = await this.currentPage;
