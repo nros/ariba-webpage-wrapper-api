@@ -9,7 +9,7 @@ import type { IPurchaseOrder } from "../IPurchaseOrder.js";
 
 import PQueue from "p-queue";
 import { TPurchaseOrderState, status2String } from "../IPurchaseOrder.js";
-import { LOGIN_REFRESH_TIMEOUT } from "../ILogin.js";
+import { LOGIN_REFRESH_TIMEOUT, MAX_LOGIN_REFRESH } from "../ILogin.js";
 
 
 function isDialogPage(page: unknown): page is IAribaDialogPage {
@@ -28,6 +28,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
 
     private _lastLogin: Date = new Date(2);
     private _refreshLoginTimer?: ReturnType<typeof setTimeout>;
+    private _refreshCounter = 0;
 
     public constructor(factory: IAribaFactory, page: Page) {
         this._factory = factory;
@@ -264,6 +265,20 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         await this.addRefreshLoginSessionOperation();
     }
 
+    public async deleteAllCookies(): Promise<IAribaWebsiteApiWithLogin> {
+        const allCookies = await this.page.cookies();
+        if (allCookies && allCookies.length > 0) {
+            await this.page.deleteCookie(...allCookies);
+        }
+
+        await this.page.evaluate(() => {
+            sessionStorage.clear();
+            localStorage.clear();
+        });
+        return this;
+    }
+
+
     private async doLogin(): Promise<void> {
         this._logger.info("Logging into Ariba.");
         const loginPage = await this._factory.createLoginPage(this.page);
@@ -294,6 +309,15 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         }
 
         await this._operationQueue.add(async () => {
+            this._refreshCounter++;
+
+            // close the session with the website and start a fresh one.
+            if (this._refreshCounter > MAX_LOGIN_REFRESH) {
+                await this.deleteAllCookies();
+                await this.refreshLoginSession();
+                this._refreshCounter = 0;
+            }
+
             // set timer first
             let nextRefresh = LOGIN_REFRESH_TIMEOUT;
             try {

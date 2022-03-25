@@ -5,6 +5,14 @@ import type { Page } from "puppeteer";
  */
 export const LOGIN_REFRESH_TIMEOUT = Math.trunc(5 * 60 * 1000);
 
+/**
+ * Max login refreshs to perform before closing the browser.
+ *
+ * There seems to be a problem with Ariba website running all day. The Webserver does not cope with it and its
+ * session crash. So, the browser need to be closed and then a new instance re-created.
+ */
+export const MAX_LOGIN_REFRESH = 20;
+
 export type TLoginError = Error & { isLoginNeeded: boolean };
 
 /***
