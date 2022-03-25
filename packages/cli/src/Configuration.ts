@@ -22,6 +22,13 @@ export function readConfiguaration(configFileName?: string): Promise<IAribaConfi
             jsonData = fileBuffer + "";
             return JSON.parse(jsonData) as IAribaConfiguration;
         })
+        .then((config: IAribaConfiguration) => {
+            if (config?.downloadDirectory && config.downloadDirectory.match(/^\.?\.\//)) {
+                config.downloadDirectory = path.resolve(path.dirname(configFile), config.downloadDirectory);
+                console.trace("Download invoice directory is", config.downloadDirectory, config);
+            }
+            return config;
+        })
         .catch((error) => {
             console.error("Failed to parse configuration file: ", configFile, "\n\nContent: ", jsonData);
 

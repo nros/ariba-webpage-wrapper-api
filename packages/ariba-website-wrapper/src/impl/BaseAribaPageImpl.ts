@@ -7,6 +7,11 @@ import type { IPageFormHelper } from "../IPageFormHelper.js";
 import type { IPageHelpers } from "../IPageHelpers.js";
 import type { TLoginError } from "../ILogin.js";
 
+import * as os from "os";
+
+
+const CLIENT = "_client";
+
 /**
  * The base interface for all wrappers of Ariba website pages.
  */
@@ -84,6 +89,21 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
     public get loggerName(): string {
         throw new Error("Property 'loggerName' MUST be implemented by base classes");
+    }
+
+    public async setDownloadDirectory(downloadTargetDirectory?: string): Promise<IAribaPage> {
+        if (!downloadTargetDirectory) {
+            downloadTargetDirectory = this.config?.downloadDirectory || os.tmpdir();
+        }
+
+        // see: https://medium.com/stackfame/get-list-of-all-files-in-a-directory-in-node-js-befd31677ec5
+        // see: https://www.scrapingbee.com/blog/download-file-puppeteer/
+        await this.page[CLIENT].send("Page.setDownloadBehavior", {
+            behavior: "allow",
+            downloadPath: downloadTargetDirectory,
+        });
+
+        return this;
     }
 
     protected get _factory(): IAribaFactory {

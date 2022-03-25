@@ -25,4 +25,11 @@ export interface IAribaPage {
      * @protected
      */
     readonly loggerName: string;
+
+    /**
+     * Sets the directory for automatic downloads
+     * @param downloadTargetDirectory (optional) the full path directory to download files to. If omitted, then
+     *     {@link IAribaConfiguration.downloadDirectory} is used instead.
+     */
+    setDownloadDirectory(downloadTargetDirectory?: string): Promise<IAribaPage>;
 }

@@ -22,4 +22,9 @@ export interface IAribaConfiguration extends IAribaConfigurationPageUrls {
         width?: number; // defaults to 1980 if omitted
         height?: number; // defaults to 1024 if omitted
     },
+
+    /**
+     * The absolute path to the directory to download invoices.
+     */
+    downloadDirectory: string;
 }
