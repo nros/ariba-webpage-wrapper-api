@@ -8,5 +8,6 @@
         "width": 1980
     },
     "debugBrowserConsole": false,
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "downloadDirectory": "../../../ARIBA-invoices/"
 }
