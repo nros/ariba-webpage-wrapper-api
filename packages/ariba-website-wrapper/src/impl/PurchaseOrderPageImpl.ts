@@ -174,6 +174,24 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             }, "" + shippingDate);
         }
 
+        if (trackingUrl) {
+            this._logger.debug(`Opening additional fields to display comment field`);
+            await page.evaluate((dateString) =>
+                window.ariba.Handlers.fakeClick(jQuery("a:contains('Additional Fields')")[0]),
+            );
+
+            this._logger.debug(`Setting tracking URL: ${trackingUrl}`);
+            await page.evaluate((value) => {
+                jQuery("td:contains('Comments:'):not(:has(td))")
+                    .parents("td")
+                    .first()
+                    .next()
+                    .find("textarea")
+                    .first()
+                    .val(value);
+            }, "" + trackingUrl);
+        }
+
         this._logger.debug("Confirm order and got to next page of form");
         await this.pageHelper.deactivateAribaClickCheck(page);
         await Promise.all([
