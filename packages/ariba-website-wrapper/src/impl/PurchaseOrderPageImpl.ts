@@ -465,13 +465,17 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 .click(),
         );
 
+        this._logger.debug("Wait for PDF download submenu button.");
         await page.waitForSelector("div[_mid='downloadPDFMenuIdTop'] button");
         await this.pageHelper.deactivateAribaClickCheck(page);
+
+        this._logger.debug("Open for PDF download submenu.");
         await page.evaluate(
             () => jQuery(("div[_mid='downloadPDFMenuIdTop'] button"))[0].click(),
         );
 
 
+        this._logger.debug(`Start PDF download to directory ${downloadTargetPath}`);
         await Promise.all([
             page.evaluate(
                 () => window.ariba.Handlers.fakeClick(
@@ -482,6 +486,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         ]);
 
         // find first file in directory
+        this._logger.debug(`Find downloaded PDF in directory ${downloadTargetPath}`);
         let max = 5;
         downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
         while (!downloadedFile && max-- > 0) {
@@ -494,6 +499,9 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         if (!downloadedFile) {
             throw new Error(`Failed to download invoice for purchase order ${purchaseOrderId}.`);
         }
+
+        this._logger.info(`Found downloaded invoide PDF directory ${downloadedFile}`);
+
         return downloadedFile;
     }
 
