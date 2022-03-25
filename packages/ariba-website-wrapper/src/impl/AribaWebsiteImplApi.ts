@@ -377,20 +377,22 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         await this._operationQueue.add(async () => {
             this._refreshCounter++;
 
+            let nextRefresh = LOGIN_REFRESH_TIMEOUT;
+
             // close the session with the website and start a fresh one.
             if (this._refreshCounter > MAX_LOGIN_REFRESH) {
                 await this.deleteAllCookies();
                 await this.refreshLoginSession();
                 this._refreshCounter = 0;
+
+            } else {
+                try {
+                    nextRefresh = await this.checkLoginSession();
+                } catch (error) {
+                    this._logger.error(`Failed to refresh login! ${error}`, { error });
+                }
             }
 
-            // set timer first
-            let nextRefresh = LOGIN_REFRESH_TIMEOUT;
-            try {
-                nextRefresh = await this.checkLoginSession();
-            } catch (error) {
-                this._logger.error(`Failed to refresh login! ${error}`, { error });
-            }
 
             this._logger.debug(`Next session refresh at ${new Date(Date.now() + nextRefresh)}`);
             this._refreshLoginTimer = setTimeout(this.addRefreshLoginSessionOperation.bind(this), nextRefresh);
