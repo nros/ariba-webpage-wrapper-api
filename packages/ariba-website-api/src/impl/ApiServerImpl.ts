@@ -14,9 +14,13 @@ import type {
 } from "../ILongRunningTaskManager.js";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
+import axios from "axios";
 import express from "express";
+import FormData from "form-data";
+import fs from "fs";
 import bodyParser from "body-parser";
 import nocache from "nocache";
+import path from "path";
 import winston from "winston";
 
 import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl.js";
@@ -220,6 +224,26 @@ export class ApiServerImpl implements IApiServer {
                 (params.supplierOrderId ? params.supplierOrderId + "" : ""),
                 (params.invoiceNumber ? params.invoiceNumber + "" : ""),
             );
+        }, true));
+
+        app.post("/orders/:id/invoice/load-to-url", this.callAriba(async (params, ariba) => {
+            if (!params.id) {
+                throw new Error("Invalid purchase order ID!");
+            }
+
+            if (!params.uploadUrl) {
+                throw new Error("Invalid upload URL!");
+            }
+
+            const downloadedInvoiceFilePath = await ariba.downloadInvoice("" + params.id);
+            if (!downloadedInvoiceFilePath) {
+                throw new Error(`Failed to download the invoice for purchase order ${params.id}.`);
+            }
+
+            let formData = new FormData();
+            formData.append("file", fs.createReadStream(downloadedInvoiceFilePath), path.basename(downloadedInvoiceFilePath))
+
+            await axios.post("" + params.uploadUrl, formData, { headers: { ...formData.getHeaders() }})
         }, true));
 
         return app;
