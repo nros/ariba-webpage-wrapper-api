@@ -240,10 +240,10 @@ export class ApiServerImpl implements IApiServer {
                 throw new Error(`Failed to download the invoice for purchase order ${params.id}.`);
             }
 
-            let formData = new FormData();
-            formData.append("file", fs.createReadStream(downloadedInvoiceFilePath), path.basename(downloadedInvoiceFilePath))
+            const formData = new FormData();
+            formData.append("file", fs.createReadStream(downloadedInvoiceFilePath), path.basename(downloadedInvoiceFilePath));
 
-            await axios.post("" + params.uploadUrl, formData, { headers: { ...formData.getHeaders() }})
+            await axios.post("" + params.uploadUrl, formData, { headers: { ...formData.getHeaders() } });
         }, true));
 
         return app;
