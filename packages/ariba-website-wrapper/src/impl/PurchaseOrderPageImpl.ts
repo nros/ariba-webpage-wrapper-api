@@ -448,7 +448,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             this._logger.debug(
                 `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
             );
-            return downloadedFile;
+            return path.join(downloadTargetPath, downloadedFile);
         }
 
         // first, check order status. In case of error, assume already confirmed
@@ -505,7 +505,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         this._logger.info(`Found downloaded invoide PDF directory ${downloadedFile}`);
 
-        return downloadedFile;
+        return path.join(downloadTargetPath, downloadedFile);
     }
 
     public async navigateToPurchaseOrder(purchaseOrderId: string): Promise<IPurchaseOrderPage> {
