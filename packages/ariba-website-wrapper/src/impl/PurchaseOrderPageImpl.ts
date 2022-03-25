@@ -220,7 +220,11 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         // first, check order status. In case of error, assume already confirmed
         const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
         if (state === TPurchaseOrderState.INVOICED) {
-            throw Error("Purchase order has already been invoiced.");
+            this._logger.info(`Purchase order ${purchaseOrderId} has already been invoiced.`);
+            return {
+                id: purchaseOrderId,
+                state: TPurchaseOrderState.INVOICED,
+            };
 
         } else if (state !== TPurchaseOrderState.DELIVERY_INITIATED) {
             throw Error("Purchase order must be delivered first to create an invoice.");
