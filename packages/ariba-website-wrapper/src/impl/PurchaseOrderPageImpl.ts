@@ -445,6 +445,9 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
         let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
         if (downloadedFile) {
+            this._logger.debug(
+                `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
+            );
             return downloadedFile;
         }
 
