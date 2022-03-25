@@ -73,4 +73,5 @@ export interface IAribaWebsiteApi {
     getLastInvoiceNumber(): Promise<string>;
 
     deleteAllCookies(): Promise<IAribaWebsiteApi>;
+    openPurchaseOrderPage(purchaseOrderId: string): Promise<IAribaWebsiteApi>;
 }

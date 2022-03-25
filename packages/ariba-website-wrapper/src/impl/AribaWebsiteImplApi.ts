@@ -297,6 +297,15 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         return this;
     }
 
+    public async openPurchaseOrderPage(purchaseOrderId:string): Promise<IAribaWebsiteApiWithLogin> {
+        await this.addOperationAndWait("openPurchaseOrderPage", async () => {
+            this._logger.info(`Open purchase order with ID ${purchaseOrderId}.`);
+            const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
+
+            await purchaseOrderPage.navigateToPurchaseOrder(purchaseOrderId);
+        });
+        return this;
+    }
 
     private async doLogin(): Promise<void> {
         this._logger.info("Logging into Ariba.");
