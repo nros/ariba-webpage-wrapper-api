@@ -9,7 +9,6 @@ import type { TLoginError } from "../ILogin.js";
 
 import * as os from "os";
 
-
 const CLIENT = "_client";
 
 /**
