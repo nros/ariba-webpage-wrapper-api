@@ -14,13 +14,9 @@ import type {
 } from "../ILongRunningTaskManager.js";
 import type { IMiddlewareNeedsTimer } from "../IMiddlewareNeedsTimer.js";
 
-import axios from "axios";
 import express from "express";
-import FormData from "form-data";
-import fs from "fs";
 import bodyParser from "body-parser";
 import nocache from "nocache";
-import path from "path";
 import winston from "winston";
 
 import { AuthenticatorJsonImpl } from "./AuthenticatorJsonImpl.js";
@@ -226,32 +222,11 @@ export class ApiServerImpl implements IApiServer {
             );
         }, true));
 
-        app.post("/orders/:id/invoice/load-to-url", this.callAriba(async (params, ariba) => {
-            if (!params.id) {
-                throw new Error("Invalid purchase order ID!");
-            }
-
-            if (!params.uploadUrl) {
-                throw new Error("Invalid upload URL!");
-            }
-
-            const downloadedInvoiceFilePath = await ariba.downloadInvoice("" + params.id);
-            if (!downloadedInvoiceFilePath) {
-                throw new Error(`Failed to download the invoice for purchase order ${params.id}.`);
-            }
-
-            const targetUrl = "" + params.uploadUrl;
-            this._logger.debug(
-                `Uploading invoice PDF ${downloadedInvoiceFilePath} to target URL ${targetUrl}.`,
+        app.post("/orders/:id/invoice/load-to-url", this.callAriba((params, ariba) => {
+            return ariba.sendInvoiceToUrl(
+                (params.id ? params.id + "" : ""),
+                (params.uploadUrl ? params.uploadUrl + "" : ""),
             );
-            const formData = new FormData();
-            formData.append("file", fs.createReadStream(downloadedInvoiceFilePath), path.basename(downloadedInvoiceFilePath));
-
-            const response = await axios.post(targetUrl, formData, { headers: { ...formData.getHeaders() } });
-            this._logger.debug(
-                `Response uploading invoice PDF ${path.basename(downloadedInvoiceFilePath)}: ${response}.`,
-            );
-
         }, true));
 
         return app;

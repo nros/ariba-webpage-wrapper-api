@@ -11,6 +11,11 @@ import PQueue from "p-queue";
 import { TPurchaseOrderState, status2String } from "../IPurchaseOrder.js";
 import { LOGIN_REFRESH_TIMEOUT, MAX_LOGIN_REFRESH } from "../ILogin.js";
 
+import axios from "axios";
+import FormData from "form-data";
+import fs from "fs";
+import path from "path";
+
 
 function isDialogPage(page: unknown): page is IAribaDialogPage {
     return !!page && (typeof (page as IAribaDialogPage).closeDialog === "function");
@@ -202,20 +207,48 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         });
     }
 
-    public async downloadInvoice(purchaseOrderId: string): Promise<string> {
+    public async sendInvoiceToUrl(purchaseOrderId: string, targetUrl: string): Promise<string> {
         if (!purchaseOrderId) {
             throw new Error("Invalid purchase order ID!");
         }
+
+        if (!targetUrl) {
+            throw new Error("Invalid upload URL!");
+        }
+
+        let fileData: fs.ReadStream;
 
         return await this.addOperationAndWait("downloadInvoice", async () => {
             this._logger.info(`Download invoice for purchase order with ID ${purchaseOrderId}.`);
             const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
 
             try {
-                return await purchaseOrderPage.downloadInvoice(purchaseOrderId);
+                const downloadedInvoiceFilePath = await purchaseOrderPage.downloadInvoice(purchaseOrderId);
+                if (!downloadedInvoiceFilePath) {
+                    throw new Error(`Failed to download the invoice for purchase order ${purchaseOrderId}.`);
+                }
+
+                this._logger.debug(
+                    `Uploading invoice PDF ${downloadedInvoiceFilePath} to target URL ${targetUrl}.`,
+                );
+
+                fileData = fs.createReadStream(downloadedInvoiceFilePath);
+                const formData = new FormData();
+                formData.append(
+                    "file",
+                    fileData,
+                    path.basename(downloadedInvoiceFilePath),
+                );
+
+                await axios.post(targetUrl, formData, { headers: { ...formData.getHeaders() } });
+                return downloadedInvoiceFilePath;
+
             } finally {
                 if (isDialogPage(purchaseOrderPage)) {
                     await purchaseOrderPage.closeDialog(purchaseOrderPage.page);
+                }
+                if (fileData) {
+                    fileData.close();
                 }
             }
         });
