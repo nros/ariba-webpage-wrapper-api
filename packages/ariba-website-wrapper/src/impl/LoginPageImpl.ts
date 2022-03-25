@@ -24,19 +24,22 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
         const page = this.page;
 
         // open the home page and see whether this is successful or a login form appears
-        this._logger.debug("Loading start page to check for login form!");
-        await page.goto(this.config.overviewPageUrl);
+        if (!await this.isLoginPage(page)) {
+            this._logger.debug("Loading start page to check for login form!");
+            await page.goto(this.config.overviewPageUrl);
 
-        // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
-        this._logger.debug("waiting for network idel2 after page load");
-        await page.waitForNavigation({ waitUntil: "networkidle2" });
+            // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
+            this._logger.debug("waiting for network idel2 after page load");
+            await page.waitForNavigation({ waitUntil: "networkidle2" });
 
-        // which page has been loaded? check to see if the session was still active!
-        this._logger.debug("Waiting for login or overview page loading.");
-        await page.waitForSelector("div.dashboard-container, .loginFormBox input[name='UserName']");
+            // which page has been loaded? check to see if the session was still active!
+            this._logger.debug("Waiting for login or overview page loading.");
+            await page.waitForSelector("div.dashboard-container, .loginFormBox input[name='UserName']");
+        }
 
         this._logger.debug("Is already logged in? Check whether login form has been loaded");
-        while (await this.isLoginPage(page)) {
+        let max = 6;
+        while (--max > 0 && await this.isLoginPage(page)) {
             this._logger.debug("Performing a login with the user credentials");
 
             // fill the login form
@@ -56,28 +59,11 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
                 page.evaluate(() => jQuery("input[type='submit']").trigger("click")),
                 page.waitForNavigation(),
             ]);
-
-            if (await this.isLoginPage(page)) {
-                // try again
-                continue;
-            }
-
-            try {
-                this._logger.debug("Waiting for dashboard to load.");
-                await page.waitForSelector("app-overview-tiles");
-            } catch (err) {
-                let errorMessage = err + "";
-                if (err instanceof Error) {
-                    errorMessage = err.message;
-                }
-
-                this._logger.error("Dashboard failed to load.");
-                throw new Error("Login has failed or overview page is unexpected! " + errorMessage);
-            }
-
-            this._logger.debug("Login has been performed successfully");
         }
 
+        if (await this.isLoginPage(page)) {
+            throw new Error("LOGIN FAILED!");
+        }
         this._logger.debug("User is logged in now");
     }
 }
