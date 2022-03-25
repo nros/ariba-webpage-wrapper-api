@@ -39,5 +39,14 @@ export function readConfigurationFile<T>(configFileName: string): PromiseLike<T>
  * @param configFileName (optional) a specific config file to read. If unset, then {@link CONFIG_FILE_NAME} is used.
  */
 export function readConfiguaration(configFileName?: string): PromiseLike<IApiConfiguration> {
-    return readConfigurationFile<IApiConfiguration>(configFileName || CONFIG_FILE_NAME);
+    const configFile = configFileName || CONFIG_FILE_NAME;
+    return readConfigurationFile<IApiConfiguration>(configFile)
+        .then((config) => {
+            if (config?.downloadDirectory && config.downloadDirectory.match(/^\.?\.\//)) {
+                config.downloadDirectory = path.resolve(path.dirname(configFile), config.downloadDirectory);
+                console.trace("Download invoice directory is", config.downloadDirectory, config);
+            }
+            return config;
+        })
+    ;
 }
