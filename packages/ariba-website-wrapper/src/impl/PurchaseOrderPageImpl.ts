@@ -561,7 +561,12 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         const openPurchaseOrderPage: () => Promise<void> = async () => {
             // check to see, whether the purchase order has been found
             this._logger.debug(`Finding the link for purchase order (ID: ${purchaseOrderId}) info page.`);
-            await page.waitForSelector(`table.awtWrapperTable a[documentid='${purchaseOrderId}']`);
+            try {
+                await page.waitForSelector(`table.awtWrapperTable a[documentid='${purchaseOrderId}']`);
+            } catch (ignore) {
+                await this.loginIfRequired(page, activatePurchaseOrderSearchPage);
+                await page.waitForSelector(`table.awtWrapperTable a[documentid='${purchaseOrderId}']`);
+            }
 
             this._logger.debug(`Activating the link for purchase order (ID: ${purchaseOrderId}) info page.`);
             await this.pageHelper.deactivateAribaClickCheck(page);
