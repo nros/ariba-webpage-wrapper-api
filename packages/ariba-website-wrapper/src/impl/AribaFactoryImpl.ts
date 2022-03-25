@@ -82,7 +82,7 @@ export class AribaFactoryImpl implements IAribaFactory {
                 devtools: false,
                 headless: !!this.config.screenResolution?.headless,
                 args: ["--lang=en-US,en"],
-                slowMo: 100, // Ariba website is so heavy weight, it seems to need some slow down
+                slowMo: 50, // Ariba website is so heavy weight, it seems to need some slow down
             });
 
             // close all pages created by default
