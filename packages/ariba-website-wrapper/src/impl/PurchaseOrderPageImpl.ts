@@ -431,7 +431,9 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         return orderData;
     }
 
-    public async downloadInvoice(purchaseOrderId: string): Promise<string> {
+    public async downloadInvoice(
+        purchaseOrderId: string,
+    ): Promise<undefined | { invoiceFile: string, orderData: IPurchaseOrder }> {
         this._logger.info(`Download invoice for purchase order with ID ${purchaseOrderId}.`);
         const page = this.page;
 
@@ -448,13 +450,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 }
             });
         }
-        let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
-        if (downloadedFile) {
-            this._logger.debug(
-                `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
-            );
-            return path.join(downloadTargetPath, downloadedFile);
-        }
 
         // first, check order status. In case of error, assume already confirmed
         const orderData = await this.getOrderData(purchaseOrderId).catch(() => undefined);
@@ -464,8 +459,19 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
+        let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
+        if (downloadedFile) {
+            this._logger.debug(
+                `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
+            );
+            return {
+                invoiceFile: path.join(downloadTargetPath, downloadedFile),
+                orderData,
+            };
+        }
+
         // check to see, whether the purchase order has been found
-        this._logger.debug(`Open invoide for purchase order (ID: ${purchaseOrderId}).`);
+        this._logger.debug(`Open invoice for purchase order (ID: ${purchaseOrderId}).`);
         await this.pageHelper.deactivateAribaClickCheck(page);
         await page.evaluate(
             () => jQuery("td.docv-IOSRD-label-related-docs")
@@ -474,6 +480,16 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 .first()[0]
                 .click(),
         );
+
+        // read invoice date
+        orderData.invoiceDate = new Date(await page.evaluate(() =>
+            jQuery("div.docv-IOSIDC-inv-details td.ANXFormLabel:contains('Invoice Date')")
+                .parents("td")
+                .first()
+                .next()
+                .text()
+                .trim(),
+        ));
 
         this._logger.debug("Wait for PDF download submenu button.");
         await page.waitForSelector("div[_mid='downloadPDFMenuIdTop'] button");
@@ -512,7 +528,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         this._logger.info(`Found downloaded invoide PDF directory ${downloadedFile}`);
 
-        return path.join(downloadTargetPath, downloadedFile);
+        return {
+            invoiceFile: path.join(downloadTargetPath, downloadedFile),
+            orderData,
+        };
     }
 
     public async navigateToPurchaseOrder(purchaseOrderId: string): Promise<IPurchaseOrderPage> {

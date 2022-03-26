@@ -223,27 +223,30 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
             const purchaseOrderPage = await this._factory.createPurchaseOrderPage(this.page);
 
             try {
-                const downloadedInvoiceFilePath = await purchaseOrderPage.downloadInvoice(purchaseOrderId);
-                if (!downloadedInvoiceFilePath) {
+                const downloadedInvoiceData = await purchaseOrderPage.downloadInvoice(purchaseOrderId);
+                if (!downloadedInvoiceData?.invoiceFile) {
                     throw new Error(`Failed to download the invoice for purchase order ${purchaseOrderId}.`);
                 }
 
                 this._logger.debug(
-                    `Uploading invoice PDF ${downloadedInvoiceFilePath} to target URL ${targetUrl}.`,
+                    `Uploading invoice PDF ${downloadedInvoiceData.invoiceFile} to target URL ${targetUrl}.`,
                 );
 
-                fileData = fs.createReadStream(downloadedInvoiceFilePath);
+                fileData = fs.createReadStream(downloadedInvoiceData.invoiceFile);
                 const formData = new FormData();
                 formData.append("purchaseOrderId", purchaseOrderId);
+                formData.append("invoiceDate", downloadedInvoiceData.orderData.invoiceDate?.toUTCString());
+                formData.append("orderDate", downloadedInvoiceData.orderData.orderDate?.toUTCString());
+                formData.append("orderStatus", downloadedInvoiceData.orderData.state);
                 formData.append(
                     "file",
                     fileData,
-                    path.basename(downloadedInvoiceFilePath)
+                    path.basename(downloadedInvoiceData.invoiceFile)
                         .replace(/(\.pdf)$/, "__" + purchaseOrderId + "$1"),
                 );
 
                 await axios.post(targetUrl, formData, { headers: { ...formData.getHeaders() } });
-                return downloadedInvoiceFilePath;
+                return downloadedInvoiceData.invoiceFile;
 
             } finally {
                 if (isDialogPage(purchaseOrderPage)) {

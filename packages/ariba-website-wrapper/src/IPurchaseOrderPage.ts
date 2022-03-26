@@ -70,7 +70,7 @@ export interface IPurchaseOrderPage extends IAribaPage {
         invoiceNumber: string,
     ): Promise<IPurchaseOrder | undefined>;
 
-    downloadInvoice(purchaseOrderId: string): Promise<string>;
+    downloadInvoice(purchaseOrderId: string): Promise<undefined | { invoiceFile: string, orderData: IPurchaseOrder }>;
 
     /**
      * Navigates to the status page of the purchase order.
