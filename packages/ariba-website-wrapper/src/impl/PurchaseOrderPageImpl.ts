@@ -167,7 +167,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         if (trackingUrl) {
             this._logger.debug(`Opening additional fields to display comment field`);
-            await page.evaluate((dateString) =>
+            await page.evaluate(() =>
                 window.ariba.Handlers.fakeClick(jQuery("a:contains('Additional Fields')")[0]),
             );
 
@@ -403,31 +403,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         ]);
 
         await this.closeDialog(page);
-
-        /*
-        const page = this.page;
-        await this.openPurchaseOrderSearchPage(page);
-
-        // open the tab to confirm purchase orders
-        await this.pageHelper.deactivateAribaClickCheck(page);
-        await page.evaluate(() => {
-            const nodes = document.querySelectorAll("a");
-            for (let i = 0; i < nodes.length; i++) {
-                const node = nodes[i] as HTMLAnchorElement;
-
-                if (/Items\s*to\s*Confirm/i.test("" + node.innerText)) {
-                    setTimeout(() => node.click(), 20);
-                    return;
-                }
-            }
-        });
-
-        await page.waitForNavigation();
-        await this.setPurchaseOrdersFilterOpen(page);
-        await this.setPurchaseOrdersFilterDateRange(page, true);
-        await this.setPurchaseOrdersFilterOrderNumber(page, purchaseOrderId);
-        await this.pressPurchaseOrdersFilterSearchButton(page);
-        */
         return orderData;
     }
 
@@ -648,29 +623,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             this._logger.error("Failed to set status to filter for: " + (err as Error).message);
         }
 
-        /*
-
-        await page.waitForSelector("input[class*='calendar'][bh='DFM']");
-        (await page.evaluate(() => {
-            const calendarNodes = document.querySelectorAll("input[class*='calendar'][bh='DFM']");
-            (calendarNodes[0] as HTMLInputElement).value = "1 Jan 2000";
-            window.ariba?.Calendar.dateTextChanged(calendarNodes[0]);
-        }));
-        */
-
-        /*
-        (await page.evaluate(() => {
-            const allNodes = document.querySelectorAll("a div");
-            for (let i = 0; i < allNodes.length; i++) {
-                const node = allNodes[i] as HTMLElement;
-                if (/Show\s+Advanced\s+Filters/i.test("" + node.innerText)) {
-                    return node.parentNode as HTMLAnchorElement;
-                }
-            }
-
-            return undefined;
-        }))?.click();
-        */
         return page;
     }
 
