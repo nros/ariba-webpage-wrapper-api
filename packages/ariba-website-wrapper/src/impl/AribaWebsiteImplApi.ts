@@ -229,7 +229,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
                 }
 
                 this._logger.debug(
-                    `Uploading invoice PDF ${downloadedInvoiceData.invoiceFile} to target URL ${targetUrl}.`,
+                    `Uploading invoice PDF ${JSON.stringify(downloadedInvoiceData)} to target URL ${targetUrl}.`,
                 );
 
                 fileData = fs.createReadStream(downloadedInvoiceData.invoiceFile);
@@ -248,6 +248,9 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
                 await axios.post(targetUrl, formData, { headers: { ...formData.getHeaders() } });
                 return downloadedInvoiceData.invoiceFile;
 
+            } catch (e) {
+                console.error("FAILED to upload invoice:", e);
+                throw e;
             } finally {
                 if (isDialogPage(purchaseOrderPage)) {
                     await purchaseOrderPage.closeDialog(purchaseOrderPage.page);

@@ -434,17 +434,6 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
 
-        let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
-        if (downloadedFile) {
-            this._logger.debug(
-                `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
-            );
-            return {
-                invoiceFile: path.join(downloadTargetPath, downloadedFile),
-                orderData,
-            };
-        }
-
         // check to see, whether the purchase order has been found
         this._logger.debug(`Open invoice for purchase order (ID: ${purchaseOrderId}).`);
         await this.pageHelper.deactivateAribaClickCheck(page);
@@ -456,21 +445,34 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 .click(),
         );
 
+        this._logger.debug("Wait for PDF download submenu button.");
+        await page.waitForSelector("div[_mid='downloadPDFMenuIdTop'] button");
+
         // read invoice date
-        orderData.invoiceDate = new Date(await page.evaluate(() =>
+        const dateStringFromPage = await page.evaluate(() =>
             jQuery("div.docv-IOSIDC-inv-details td.ANXFormLabel:contains('Invoice Date')")
                 .parents("td")
                 .first()
                 .next()
                 .text()
                 .trim(),
-        ));
+        );
+        orderData.invoiceDate = new Date(dateStringFromPage) || new Date();
 
-        this._logger.debug("Wait for PDF download submenu button.");
-        await page.waitForSelector("div[_mid='downloadPDFMenuIdTop'] button");
-        await this.pageHelper.deactivateAribaClickCheck(page);
+        let downloadedFile = await getDownloadedFileAsFirstFile(downloadTargetPath);
+        if (downloadedFile) {
+            this._logger.debug(
+                `Invoice has already been downloaded for purchase order (ID: ${purchaseOrderId}): ${downloadedFile}.`,
+            );
+            return {
+                invoiceFile: path.join(downloadTargetPath, downloadedFile),
+                orderData,
+            };
+        }
 
+        // download the PDF
         this._logger.debug("Open for PDF download submenu.");
+        await this.pageHelper.deactivateAribaClickCheck(page);
         await page.evaluate(
             () => jQuery(("div[_mid='downloadPDFMenuIdTop'] button"))[0].click(),
         );
