@@ -62,12 +62,13 @@ export interface IPurchaseOrder {
     /**
      * The id of the purchase order on the website.
      */
-    readonly id: string;
+    id: string;
 
     /**
      * The id of the purchase order on the website.
      */
-    readonly state: TPurchaseOrderState;
+    state: TPurchaseOrderState;
+
     /**
      * The date of the invoice
      */
