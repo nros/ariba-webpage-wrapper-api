@@ -73,4 +73,6 @@ export interface IPurchaseOrder {
      * The date of the invoice
      */
     invoiceDate?: Date;
+
+    orderDate: Date;
 }

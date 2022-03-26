@@ -777,6 +777,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         return {
             id: await page.evaluate(() => window.jQuery(".poHeaderStatusStyle").next().text().trim()),
             state: await this.readOrderStateFromPage(page),
+            orderDate: new Date(await page.evaluate(() =>
+                window.jQuery("tr.po-INSPOD-rel-po-date td:contains('Order submitted on')")
+                    .text().split("\n")[1].replace("Order submitted on:", "").trim(),
+            )),
         } as IPurchaseOrder;
     }
 
