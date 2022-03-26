@@ -16,32 +16,23 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         return "PurchaseOrderPageImpl";
     }
 
-    public async getOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
+    public getOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState> {
         //
         this._logger.info(`Get status of purchase order with ID ${purchaseOrderId}.`);
-        await this.navigateToPurchaseOrder(purchaseOrderId);
+        return this.getOrderData(purchaseOrderId)
+            .then((order) => {
+                if (!order?.state) {
+                    throw new Error("Failed to read order status from order page.");
+                }
+                return order.state;
+            });
+    }
 
+    public async getOrderData(purchaseOrderId: string): Promise<IPurchaseOrder | undefined> {
         const page = this.page;
+        await this.navigateToPurchaseOrder(purchaseOrderId);
         await this.loginIfRequired(page, () => this.navigateToPurchaseOrder(purchaseOrderId));
-
-        this._logger.debug(`Read order status with jQuery`);
-        const status = await page.evaluate(() =>
-            window.jQuery(".poHeaderStatusStyle").text().replace(/[)(]/g, "").toLowerCase().trim(),
-        ).catch(() => "");
-
-        switch (status) {
-        case "new":
-        case "failed":
-            return TPurchaseOrderState.NEW;
-        case "confirmed":
-            return TPurchaseOrderState.CONFIRMED;
-        case "shipped":
-            return TPurchaseOrderState.DELIVERY_INITIATED;
-        case "invoiced":
-            return TPurchaseOrderState.INVOICED;
-        default:
-            throw new Error("Failed to read status of order. Status is unknown: " + status);
-        }
+        return await this.readOrderDataFromPage(page);
     }
 
     public async createShippingNotice(
@@ -218,15 +209,12 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.info(`Creating invoice for purchase order with ID ${purchaseOrderId}.`);
 
         // first, check order status. In case of error, assume already confirmed
-        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
-        if (state === TPurchaseOrderState.INVOICED) {
+        const orderData = await this.getOrderData(purchaseOrderId).catch(() => undefined);
+        if (orderData?.state === TPurchaseOrderState.INVOICED) {
             this._logger.info(`Purchase order ${purchaseOrderId} has already been invoiced.`);
-            return {
-                id: purchaseOrderId,
-                state: TPurchaseOrderState.INVOICED,
-            };
+            return orderData;
 
-        } else if (state !== TPurchaseOrderState.DELIVERY_INITIATED) {
+        } else if (orderData?.state !== TPurchaseOrderState.DELIVERY_INITIATED) {
             throw Error("Purchase order must be delivered first to create an invoice.");
         }
 
@@ -328,10 +316,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         await this.pageHelper.wait(1);
 
-        return {
-            id: purchaseOrderId,
-            state: TPurchaseOrderState.INVOICED,
-        };
+        return orderData;
     }
 
 
@@ -345,12 +330,9 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.info(`Confirming purchase order with ID ${purchaseOrderId}.`);
 
         // first, check order status. In case of error, assume already confirmed
-        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.CONFIRMED);
-        if (state !== TPurchaseOrderState.NEW) {
-            return {
-                id: purchaseOrderId,
-                state,
-            };
+        const orderData = await this.getOrderData(purchaseOrderId).catch(() => undefined);
+        if (orderData?.state !== TPurchaseOrderState.NEW) {
+            return orderData;
         }
 
 
@@ -446,10 +428,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await this.setPurchaseOrdersFilterOrderNumber(page, purchaseOrderId);
         await this.pressPurchaseOrdersFilterSearchButton(page);
         */
-        return {
-            id: purchaseOrderId,
-            state: TPurchaseOrderState.CONFIRMED,
-        };
+        return orderData;
     }
 
     public async downloadInvoice(purchaseOrderId: string): Promise<string> {
@@ -478,8 +457,8 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         }
 
         // first, check order status. In case of error, assume already confirmed
-        const state = await this.getOrderStatus(purchaseOrderId).catch(() => TPurchaseOrderState.NEW);
-        if (state !== TPurchaseOrderState.INVOICED) {
+        const orderData = await this.getOrderData(purchaseOrderId).catch(() => undefined);
+        if (orderData?.state !== TPurchaseOrderState.INVOICED) {
             throw Error("Purchase order has not yet been invoiced.");
         }
 
@@ -767,5 +746,43 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         await page.waitForXPath("//a[contains(text(), 'Order Confirmation Header')]", { visible: true });
 
         return page;
+    }
+
+
+    protected async readOrderDataFromPage(page: Page): Promise<IPurchaseOrder | undefined> {
+        if (!page) {
+            return undefined;
+        }
+
+        this._logger.debug(`Read order status with jQuery`);
+        return {
+            id: await page.evaluate(() => window.jQuery(".poHeaderStatusStyle").next().text().trim()),
+            state: await this.readOrderStateFromPage(page),
+        } as IPurchaseOrder;
+    }
+
+    private async readOrderStateFromPage(page: Page): Promise<TPurchaseOrderState> {
+        if (!page) {
+            throw new Error("Failed to read order status of unknown page.");
+        }
+
+        this._logger.debug(`Read order status with jQuery`);
+        const status = await page.evaluate(() =>
+            window.jQuery(".poHeaderStatusStyle").text().replace(/[)(]/g, "").toLowerCase().trim(),
+        ).catch(() => "");
+
+        switch (status) {
+        case "new":
+        case "failed":
+            return TPurchaseOrderState.NEW;
+        case "confirmed":
+            return TPurchaseOrderState.CONFIRMED;
+        case "shipped":
+            return TPurchaseOrderState.DELIVERY_INITIATED;
+        case "invoiced":
+            return TPurchaseOrderState.INVOICED;
+        default:
+            throw new Error("Failed to read status of order. Status is unknown: " + status);
+        }
     }
 }

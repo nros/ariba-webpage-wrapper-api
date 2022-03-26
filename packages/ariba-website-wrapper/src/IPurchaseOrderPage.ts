@@ -17,6 +17,17 @@ export interface IPurchaseOrderPage extends IAribaPage {
     getOrderStatus(purchaseOrderId: string): Promise<TPurchaseOrderState>;
 
     /**
+     * Read the order status from the web site.
+     *
+     * <p>
+     *     This is a very expensive operation for just a singe statue
+     * </p>
+     *
+     * @param purchaseOrderId the purchase order ID
+     */
+    getOrderData(purchaseOrderId: string): Promise<IPurchaseOrder | undefined>;
+
+    /**
      * Opens the page order status dialog and confirms the specified order.
      *
      * @param purchaseOrderId The ID of the purchase order to confirm.
