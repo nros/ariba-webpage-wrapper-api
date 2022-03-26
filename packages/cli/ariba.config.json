@@ -1,0 +1,12 @@
+{
+    "username": "Sabrina@urbantool.com",
+    "password": "MrUrban_DB21",
+    "overviewPageUrl": "https://eu.mu.ariba.com/seller-portal-dashboard/home",
+    "screenResolution": {
+        "headless": false,
+        "width": 1980
+    },
+    "debugBrowserConsole": false,
+    "logLevel": "debug",
+    "downloadDirectory": "../../../../invoices"
+}

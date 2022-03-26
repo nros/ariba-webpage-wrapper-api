@@ -234,10 +234,12 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
 
                 fileData = fs.createReadStream(downloadedInvoiceFilePath);
                 const formData = new FormData();
+                formData.append("purchaseOrderId", purchaseOrderId);
                 formData.append(
                     "file",
                     fileData,
-                    path.basename(downloadedInvoiceFilePath),
+                    path.basename(downloadedInvoiceFilePath)
+                        .replace(/(\.pdf)$/, "__" + purchaseOrderId + "$1"),
                 );
 
                 await axios.post(targetUrl, formData, { headers: { ...formData.getHeaders() } });
