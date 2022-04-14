@@ -69,12 +69,6 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         await page.goto(this.config.overviewPageUrl);
         await this.loginIfRequired(page, () => page.goto(this.config.overviewPageUrl));
 
-        // the home page has multiple redirect and sometimes blocks loading some unimportant assets.
-        await page.waitForNavigation({ waitUntil: "networkidle2" }).catch();
-
-        // wait two seconds. For some reason, puppeteer is too fast for Ariba web site
-        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
-
         // check to see if the session was still active or a login is needed
         await page.waitForSelector("app-dashboard .search-container")
             .catch((error) => {
