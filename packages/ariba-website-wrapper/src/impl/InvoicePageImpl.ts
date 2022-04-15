@@ -63,7 +63,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         await navigateToInvoiceSearchPage();
         await this.loginIfRequired(page, navigateToInvoiceSearchPage);
 
-        this._logger.debug("Waiting for the 'Purchase Order Search Page' to become available");
+        this._logger.debug("Waiting for the 'Invoice Search Page' to become available");
         await page.waitForXPath("//td[@class='pageHeadingText'][contains(text(), 'Invoices')]");
 
         return page;
@@ -108,6 +108,8 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
                 return numbers.pop();
             });
         }
+
+        this._logger.debug("Last invoice number is: " + lastNumber);
 
         if (isEmpty || !lastNumber) {
             const startInvoiceNumber = this.formatNewInvoiceNumber(0);
