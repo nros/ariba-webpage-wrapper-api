@@ -43,7 +43,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
             await this.pageHelper.loadJQuery(page);
 
             await page.evaluate(() =>
-                window.jQuery("#SUPInvoices").find("fd-popover-control:contains('Invoices')")
+                window.jQuery("#SUPInvoices").find("sc-menu-item-label")
                     .trigger("click"),
             );
 
