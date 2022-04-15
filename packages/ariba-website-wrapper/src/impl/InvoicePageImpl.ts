@@ -72,11 +72,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
     private async readLatestInvoiceNumberFromPage(page: Page): Promise<string> {
         await this.openInvoiceSearchPage(page);
         await this.loginIfRequired(page, () => this.openInvoiceSearchPage(page));
-
         await this.pageHelper.deactivateAribaClickCheck(page);
-        await this.pageFormHelper.setFilterOpen(page);
-        await this.pageFormHelper.setFilterDateRange(page, false);
-        await this.pageFormHelper.pressFilterSearchButton(page);
 
         // ensure jQuery has been loaded
         await this.pageHelper.loadJQuery(page);
