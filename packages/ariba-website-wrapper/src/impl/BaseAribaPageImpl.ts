@@ -159,7 +159,10 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
             await loginPage.login();
 
             if (typeof openExpectedPage === "function") {
-                await openExpectedPage();
+                await (openExpectedPage().catch((error) => {
+                    console.error(error);
+                    Promise.reject(error);
+                }));
             }
         }
     }
