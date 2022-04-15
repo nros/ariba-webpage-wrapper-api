@@ -65,18 +65,14 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
             }
         }
 
-        logger.debug("Opening overview page URL.");
-        await page.goto(this.config.overviewPageUrl);
-        await this.loginIfRequired(page, () => page.goto(this.config.overviewPageUrl));
-
-        // check to see if the session was still active or a login is needed
-        await page.waitForSelector("app-dashboard .search-container")
-            .catch((error) => {
-                const loginError = new Error("Session has expired! Please login again! " + error) as TLoginError;
-                loginError.isLoginNeeded = true;
-                return Promise.reject(loginError);
-            })
-        ;
+        try {
+            logger.debug("Opening overview page URL.");
+            await page.goto(this.config.overviewPageUrl);
+            await this.loginIfRequired(page, () => page.goto(this.config.overviewPageUrl));
+            await page.waitForSelector("app-dashboard .search-container", { timeout: 10000 });
+        } catch (error) {
+            console.error("Failed to navigate to home screen:", error);
+        }
 
         return this;
     }
