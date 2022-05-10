@@ -151,7 +151,11 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
             }
 
             if (deliveryDateTimestamp <= shippingDateTimestamp) {
-                throw new Error("Delivery date can not be earlier than the shipping date.");
+                this._logger.error(
+                    `Delivery date ${estimatedDeliveryDate} can not be earlier than the shipping date ` +
+                    `${shippingDate}. New estimated delivery date is 4 days after shipping date.`,
+                );
+                estimatedDeliveryDate = new Date(shippingDateTimestamp + 4 * 24 * 60 * 60 * 1000);
             }
         }
 
