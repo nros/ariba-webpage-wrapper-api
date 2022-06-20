@@ -214,7 +214,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             this._logger.info(`Purchase order ${purchaseOrderId} has already been invoiced.`);
             return orderData;
 
-        } else if (orderData?.state !== TPurchaseOrderState.DELIVERY_INITIATED) {
+        } else if (
+            orderData?.state !== TPurchaseOrderState.DELIVERY_INITIATED &&
+            orderData?.state !== TPurchaseOrderState.PARTIAL_DELIVERY
+        ) {
             throw Error("Purchase order must be delivered first to create an invoice.");
         }
 
@@ -428,7 +431,10 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
 
         // first, check order status. In case of error, assume already confirmed
         const orderData = await this.getOrderData(purchaseOrderId).catch(() => undefined);
-        if (orderData?.state !== TPurchaseOrderState.INVOICED) {
+        if (
+            orderData?.state !== TPurchaseOrderState.INVOICED &&
+            orderData?.state !== TPurchaseOrderState.INVOICED_PARTIALLY
+        ) {
             throw Error("Purchase order has not yet been invoiced.");
         }
 
@@ -756,8 +762,12 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
             return TPurchaseOrderState.CONFIRMED;
         case "shipped":
             return TPurchaseOrderState.DELIVERY_INITIATED;
+        case "partially shipped":
+            return TPurchaseOrderState.PARTIAL_DELIVERY;
         case "invoiced":
             return TPurchaseOrderState.INVOICED;
+        case "partially invoiced":
+            return TPurchaseOrderState.INVOICED_PARTIALLY;
         default:
             throw new Error("Failed to read status of order. Status is unknown: " + status);
         }
