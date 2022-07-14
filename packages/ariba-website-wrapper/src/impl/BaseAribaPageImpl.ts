@@ -2,24 +2,23 @@ import type { Page } from "puppeteer";
 import type { Logger } from "winston";
 import type { IAribaConfiguration } from "../IAribaConfiguration.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
-import type { IAribaPage } from "../IAribaPage.js";
+import type { IAribaPage, PageWithClient } from "../IAribaPage.js";
 import type { IPageFormHelper } from "../IPageFormHelper.js";
 import type { IPageHelpers } from "../IPageHelpers.js";
-import type { TLoginError } from "../ILogin.js";
+
 
 import * as os from "os";
 
-const CLIENT = "_client";
 
 /**
  * The base interface for all wrappers of Ariba website pages.
  */
 export abstract class BaseAribaPageImpl implements IAribaPage {
-    private readonly _currentPage: Page;
+    private readonly _currentPage: PageWithClient;
     private readonly _myLogger: Logger;
     private readonly _myFactory: IAribaFactory;
 
-    public constructor(factory: IAribaFactory, page: Page) {
+    public constructor(factory: IAribaFactory, page: PageWithClient) {
         this._myFactory = factory;
         this._currentPage = page;
         this._myLogger = factory.createLogger(this.loggerName);
@@ -32,7 +31,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         }
     }
 
-    public get page(): Page {
+    public get page(): PageWithClient {
         return this._currentPage;
     }
 
@@ -88,10 +87,12 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
 
         // see: https://medium.com/stackfame/get-list-of-all-files-in-a-directory-in-node-js-befd31677ec5
         // see: https://www.scrapingbee.com/blog/download-file-puppeteer/
-        await this.page[CLIENT].send("Page.setDownloadBehavior", {
-            behavior: "allow",
+        // see: https://github.com/puppeteer/puppeteer/issues/7173
+        await this.page._client().send("Page.setDownloadBehavior", {
+            behavior: "allowAndName",
             downloadPath: downloadTargetDirectory,
-        });
+            eventsEnabled: true,
+        } as any); // TypeScript does not recognise the proper type yet.
 
         return this;
     }
@@ -153,7 +154,7 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         });
     }
 
-    protected async loginIfRequired(page: Page, openExpectedPage: () => Promise<unknown>): Promise<void> {
+    protected async loginIfRequired(page: PageWithClient, openExpectedPage: () => Promise<unknown>): Promise<void> {
         const loginPage = await this._factory.createLoginPage(page);
         if (await loginPage.isLoginPage(page)) {
             await loginPage.login();

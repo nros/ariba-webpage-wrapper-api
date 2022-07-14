@@ -1,4 +1,4 @@
-import type { Page } from "puppeteer";
+import type { PageWithClient } from "../IAribaPage";
 import type { ILoginPage } from "../ILoginPage.js";
 
 import { BaseAribaPageImpl } from "./BaseAribaPageImpl.js";
@@ -14,7 +14,7 @@ export class LoginPageImpl extends BaseAribaPageImpl implements ILoginPage {
         return "LoginPageImpl";
     }
 
-    public isLoginPage(page: Page): Promise<boolean> {
+    public isLoginPage(page: PageWithClient): Promise<boolean> {
         return page.evaluate(() =>
             document.querySelectorAll(".loginFormBox input[name='UserName']").length !== 0,
         );

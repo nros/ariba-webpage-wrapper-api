@@ -8,6 +8,7 @@ import type { ILoginPage } from "./ILoginPage.js";
 import type { IPageFormHelper } from "./IPageFormHelper.js";
 import type { IPageHelpers } from "./IPageHelpers.js";
 import type { IPurchaseOrderPage } from "./IPurchaseOrderPage.js";
+import type { PageWithClient } from "./IAribaPage";
 
 /**
  * The factory used with the Ariba website wrapper.
@@ -30,12 +31,12 @@ export interface IAribaFactory {
     /**
      * Create a new Ariba website wrapper that builds an API.
      */
-    createAribaWebsiteApi(page: Page): Promise<IAribaWebsiteApiWithLogin>;
+    createAribaWebsiteApi(page: PageWithClient): Promise<IAribaWebsiteApiWithLogin>;
 
     /**
      * Create a new browser page
      */
-    createNewPage(): PromiseLike<Page>;
+    createNewPage(): PromiseLike<PageWithClient>;
 
     /**
      * Close the browser instance and free all system resources.
@@ -54,7 +55,7 @@ export interface IAribaFactory {
      */
     createLogger(className: string): Logger;
 
-    createPurchaseOrderPage(page: Page): Promise<IPurchaseOrderPage>;
-    createLoginPage(page: Page): Promise<ILoginPage>;
-    createInvoicePage(page: Page): Promise<IInvoicePage>;
+    createPurchaseOrderPage(page: PageWithClient): Promise<IPurchaseOrderPage>;
+    createLoginPage(page: PageWithClient): Promise<ILoginPage>;
+    createInvoicePage(page: PageWithClient): Promise<IInvoicePage>;
 }

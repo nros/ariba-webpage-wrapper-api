@@ -1,5 +1,9 @@
-import type { Page } from "puppeteer";
+import type { CDPSession, Page } from "puppeteer";
 import type { IAribaConfiguration } from "./IAribaConfiguration.js";
+
+export type PageWithClient = Page & {
+    _client(): CDPSession;
+};
 
 /**
  * The base interface for all wrappers of Ariba website pages.
@@ -8,7 +12,7 @@ export interface IAribaPage {
     /**
      * The browser page this page wrapper operates on.
      */
-    readonly page: Page;
+    readonly page: PageWithClient;
 
     /**
      * The configuration of the ariba wrapper

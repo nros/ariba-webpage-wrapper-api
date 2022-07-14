@@ -2,6 +2,7 @@ import type { Page } from "puppeteer";
 import type { Logger } from "winston";
 
 import type { IAribaDialogPage } from "../IAribaDialogPage.js";
+import type { PageWithClient } from "../IAribaPage";
 import type { IAribaFactory } from "../IAribaFactory.js";
 import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
 import type { TLoginError } from "../ILogin.js";
@@ -28,20 +29,20 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
 
     // Ariba website is awfull and can just operate on a single page at once!
     private readonly _operationQueue = new PQueue({ concurrency: 1 });
-    private readonly _page: Page;
+    private readonly _page: PageWithClient;
     private _nextTaskOrderNumber = 1;
 
     private _lastLogin: Date = new Date(2);
     private _refreshLoginTimer?: ReturnType<typeof setTimeout>;
     private _refreshCounter = 0;
 
-    public constructor(factory: IAribaFactory, page: Page) {
+    public constructor(factory: IAribaFactory, page: PageWithClient) {
         this._factory = factory;
         this._logger = factory.createLogger("AribaWebsiteImplApi");
         this._page = page;
     }
 
-    public get page(): Page {
+    public get page(): PageWithClient {
         return this._page;
     }
 
@@ -356,7 +357,7 @@ export class AribaWebsiteImplApi implements IAribaWebsiteApiWithLogin {
         return this;
     }
 
-    public async isLoginPage(page: Page): Promise<boolean> {
+    public async isLoginPage(page: PageWithClient): Promise<boolean> {
         const loginPage = await this._factory.createLoginPage(page);
         return loginPage.isLoginPage(page);
     }

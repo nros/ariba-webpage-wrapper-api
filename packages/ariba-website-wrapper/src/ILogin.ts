@@ -1,4 +1,4 @@
-import type { Page } from "puppeteer";
+import type { PageWithClient } from "./IAribaPage";
 
 /**
  * The timeout to perform a login page reload
@@ -22,9 +22,6 @@ export type TLoginError = Error & { isLoginNeeded: boolean };
 export interface ILogin {
     /**
      * Opens the dashboard home on the provided page and tries to login if necessary.
-     *
-     * @param page the browser page to use for the login procedure. The current URL is changed. In the end
-     *     then dashboard is opened in this page.
      */
     login(): Promise<void>;
 
@@ -38,7 +35,7 @@ export interface ILogin {
      * </p>
      * @param page
      */
-    isLoginPage(page: Page): Promise<boolean>;
+    isLoginPage(page: PageWithClient): Promise<boolean>;
 
-    readonly page: Page;
+    readonly page: PageWithClient;
 }

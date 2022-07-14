@@ -3,6 +3,7 @@ import type * as Transport from "winston-transport";
 
 import type { IAribaConfiguration } from "../IAribaConfiguration.js";
 import type { IAribaFactory } from "../IAribaFactory.js";
+import type { PageWithClient } from "../IAribaPage";
 import type { IAribaWebsiteApiWithLogin } from "../IAribaWebsiteApiWithLogin.js";
 import type { IInvoicePage } from "../IInvoicePage.js";
 import type { ILoginPage } from "../ILoginPage.js";
@@ -92,16 +93,16 @@ export class AribaFactoryImpl implements IAribaFactory {
         return this._browser;
     }
 
-    public async createAribaWebsiteApi(page: Page): Promise<IAribaWebsiteApiWithLogin> {
+    public async createAribaWebsiteApi(page: PageWithClient): Promise<IAribaWebsiteApiWithLogin> {
         return new AribaWebsiteImplApi(this, page);
     }
 
-    public createNewPage(): Promise<Page> {
+    public createNewPage(): Promise<PageWithClient> {
         return this.getBrowser()
             .then((browser) => browser.newPage())
             .then(async (page) => {
                 if (!page) {
-                    return Promise.reject<Page>(new Error("Failed to create a new page!"));
+                    return Promise.reject<PageWithClient>(new Error("Failed to create a new page!"));
                 }
 
                 // setting a specific user agent to speed up headless mode
@@ -179,7 +180,9 @@ export class AribaFactoryImpl implements IAribaFactory {
                     });
                 }
 
-                return page;
+                // since version 14.4.0, the internal property "_client()" is part of the page. So, just type
+                // changing is required.
+                return page as PageWithClient;
             })
         ;
     }
@@ -211,15 +214,15 @@ export class AribaFactoryImpl implements IAribaFactory {
         return this._logger.child({ loggerName });
     }
 
-    public async createPurchaseOrderPage(page: Page): Promise<IPurchaseOrderPage> {
+    public async createPurchaseOrderPage(page: PageWithClient): Promise<IPurchaseOrderPage> {
         return new PurchaseOrderPageImpl(this, page);
     }
 
-    public async createLoginPage(page: Page): Promise<ILoginPage> {
+    public async createLoginPage(page: PageWithClient): Promise<ILoginPage> {
         return new LoginPageImpl(this, page);
     }
 
-    public async createInvoicePage(page: Page): Promise<IInvoicePage> {
+    public async createInvoicePage(page: PageWithClient): Promise<IInvoicePage> {
         return new InvoicePageImpl(this, page);
     }
 

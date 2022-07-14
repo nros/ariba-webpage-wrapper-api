@@ -1,4 +1,5 @@
 import type { Page } from "puppeteer";
+import type{ PageWithClient } from "../IAribaPage";
 import type { IInvoicePage } from "../IInvoicePage.js";
 import { BaseAribaDialogPageImpl } from "./BaseAribaDialogPageImpl.js";
 
@@ -26,7 +27,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         ;
     }
 
-    public async openInvoiceSearchPage(page: Page): Promise<Page> {
+    public async openInvoiceSearchPage(page: PageWithClient): Promise<Page> {
         this._logger.info("Navigating to invoices search page");
 
         if (!page) {
@@ -69,7 +70,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         return page;
     }
 
-    private async readLatestInvoiceNumberFromPage(page: Page): Promise<string> {
+    private async readLatestInvoiceNumberFromPage(page: PageWithClient): Promise<string> {
         await this.openInvoiceSearchPage(page);
         await this.loginIfRequired(page, () => this.openInvoiceSearchPage(page));
         await this.pageHelper.deactivateAribaClickCheck(page);
