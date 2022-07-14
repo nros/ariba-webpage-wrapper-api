@@ -480,9 +480,11 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
         this._logger.debug("Open for PDF download submenu.");
         await this.pageHelper.deactivateAribaClickCheck(page);
         await page.evaluate(
-            () => jQuery(("div[_mid='downloadPDFMenuIdTop'] button"))[0].click(),
+            () => window.ariba.Handlers.fakeClick(
+                jQuery("div[_mid='downloadPDFMenuIdTop'] button")[0],
+            ),
         );
-
+        await page.waitForSelector("#downloadPDFMenuIdTop");
 
         this._logger.debug(`Start PDF download to directory ${downloadTargetPath}`);
         await Promise.all([
@@ -490,7 +492,7 @@ export class PurchaseOrderPageImpl extends BaseAribaDialogPageImpl implements IP
                 () => window.ariba.Handlers.fakeClick(
                     jQuery("#downloadPDFMenuIdTop a:contains('PDF')")[0],
                 ),
-            ),
+            ).catch(() => false),
             await page.waitForNetworkIdle().catch(() => false),
         ]);
 
