@@ -1,5 +1,5 @@
 import type { Browser } from "puppeteer";
-import puppeteer from "puppeteer-extra";
+import puppeteer from "puppeteer";
 
 /*
 import AdblockerPlugin from "puppeteer-extra-plugin-adblocker";
