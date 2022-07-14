@@ -87,7 +87,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
             // get maximum number in the list
             this._logger.debug("Reading last invoice number.");
             lastNumber = await page.evaluate(() => {
-                const $rowHeader = window.jQuery("th a:contains('Invoice #')").first().parents("th").first();
+                const $rowHeader = window.jQuery("th button:contains('Invoice Number')").first().parents("th").first();
 
                 let child = 1;
                 let $currentSibling = $rowHeader;
@@ -96,8 +96,8 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
                     $currentSibling = $currentSibling.prev();
                 }
 
-                const $table = $rowHeader.parents("tbody").first();
-                const $invoiceNumberRows = $table.children("tr").children("td:nth-child(" + child + ")");
+                const $table = $rowHeader.parents("table").first();
+                const $invoiceNumberRows = $table.children("tbody").children("tr").children("td:nth-child(" + child + ")");
 
                 const numbers: string[] = [];
                 window.jQuery.each($invoiceNumberRows, (index: number, value: JQuery.PlainObject<any>) => {
