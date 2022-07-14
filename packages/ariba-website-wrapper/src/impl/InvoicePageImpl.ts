@@ -113,8 +113,8 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
 
         if (isEmpty || !lastNumber) {
             const startInvoiceNumber = this.formatNewInvoiceNumber(0);
-            this._logger.warn(`NO invoice number can be found! Using '0' to start with:  ${startInvoiceNumber}`);
-            return startInvoiceNumber;
+            this._logger.error(`NO invoice number can be found! Using '0' to start with:  ${startInvoiceNumber}`);
+            throw new Error("NO invoice number can be found!");
 
         } else {
             return lastNumber;
