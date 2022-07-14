@@ -64,7 +64,7 @@ export class InvoicePageImpl extends BaseAribaDialogPageImpl implements IInvoice
         await this.loginIfRequired(page, navigateToInvoiceSearchPage);
 
         this._logger.debug("Waiting for the 'Invoice Search Page' to become available");
-        await page.waitForXPath("//td[@class='pageHeadingText'][contains(text(), 'Invoices')]");
+        await page.waitForXPath("//*[@id='selected-tile-label'][contains(text(), 'Invoices')]");
 
         return page;
     }
