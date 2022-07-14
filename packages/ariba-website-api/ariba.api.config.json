@@ -5,7 +5,7 @@
     },
     "screenResolution": {
         "headless": true,
-        "width": 1980
+        "width": 1080
     },
     "debugBrowserConsole": false,
     "logLevel": "debug",
