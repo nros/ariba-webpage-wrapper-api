@@ -89,9 +89,8 @@ export abstract class BaseAribaPageImpl implements IAribaPage {
         // see: https://www.scrapingbee.com/blog/download-file-puppeteer/
         // see: https://github.com/puppeteer/puppeteer/issues/7173
         await this.page._client().send("Page.setDownloadBehavior", {
-            behavior: "allowAndName",
+            behavior: "allow",
             downloadPath: downloadTargetDirectory,
-            eventsEnabled: true,
         } as any); // TypeScript does not recognise the proper type yet.
 
         return this;
